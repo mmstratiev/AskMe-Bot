@@ -1,0 +1,8 @@
+{
+    "response_unknown_question": "I don't know what you mean.",
+    "response_command_failed": "There was an error trying to execute that command!",
+    "response_no_arguments": "You didn't provide any arguments!",
+    "response_proper_command": "Proper command form is:",
+
+    "askme_usage": "<question>"
+}
