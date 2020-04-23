@@ -1,8 +1,9 @@
 {
-    "response_unknown_question": "I don't know what you mean.",
+    "response_unknown_question": "Sorry, I don't know the answer to that. Try tagging me for a list of questions!",
     "response_command_failed": "There was an error trying to execute that command!",
     "response_no_arguments": "You didn't provide any arguments!",
     "response_proper_command": "Proper command form is:",
-
-    "askme_usage": "<question>"
+    "response_mentioned_self": "You can use ^1 to ask me any of the following questions:",
+    
+    "main_command_usage": "<question>"
 }

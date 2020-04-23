@@ -1,7 +1,8 @@
-const localization = require('./localization.json');
 const fs = require('fs');
 const discord = require('discord.js');
-const {prefix, token} = require('./config.json');
+const localization = require('./localization.json');
+const {prefix, main_command, token} = require('./config.json');
+const questionObjects = require('./askme.json');
 
 const client = new discord.Client();
 
@@ -19,6 +20,7 @@ for (const file of commandFiles) {
 
 client.on('ready', () =>{
     console.log('Bot is online!');
+    client.user.setActivity('people Tag Me!', { type: 'WATCHING' });
 });
 
 client.on('message', message=>
@@ -59,7 +61,17 @@ client.on('message', message=>
         }
         else if(message.mentions.users.has(client.user.id)) // Mentioned bot
         {
-            message.reply('What\'s up?');
+            console.log(`User ${message.author.username} mentioned the bot in channel ${message.channel.name}.`);
+
+            var reply = localization.response_mentioned_self;
+            reply = reply.replace('^1', `\`${prefix}${main_command} ${localization.main_command_usage}\``);
+
+            for(var attributename in questionObjects)
+            {
+                reply += '\n' + `\`${attributename}\``;
+            }
+
+            message.reply(reply);
         } 
     }
 });
