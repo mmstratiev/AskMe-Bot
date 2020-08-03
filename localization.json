@@ -2,8 +2,10 @@
     "response_unknown_question": "Sorry, I don't know the answer to that. Try tagging me for a list of questions!",
     "response_command_failed": "There was an error trying to execute that command!",
     "response_no_arguments": "You didn't provide any arguments!",
+    "response_invalid_argument_count": "You provided an invalid number of arguments!",
     "response_proper_command": "Proper command form is:",
     "response_mentioned_self": "You can use ^1 to ask me any of the following questions:",
     
-    "main_command_usage": "<question>"
+    "main_command_usage": "<> or <question>",
+    "help_command_usage": "<> or <command name>"
 }
