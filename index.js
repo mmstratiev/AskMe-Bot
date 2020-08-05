@@ -4,11 +4,69 @@ const utilities = require('./utilities.js');
 const { prefix, token } = require('./config.json');
 const { help_command } = require('./commands.json');
 
-const sqlite = require('sqlite3').verbose();
-
 const client = new discord.Client();
 
-// Setup commands
+function AddMemberToDatabase(member) {
+    if (!member.bot) {
+        let db = utilities.openDatabase();
+        let insertUser = db.prepare('INSERT OR REPLACE INTO users VALUES(?,?,?)');
+
+        insertUser.run([member.user.id, member.guild.id, member.user.tag], (err) => {
+            if (err) {
+                console.log(err);
+            }
+            insertUser.finalize();
+        });
+    }
+}
+
+function RemoveMemberFromDatabase(member) {
+    if (!member.bot) {
+        let db = utilities.openDatabase();
+        let removeUser = db.prepare('DELETE FROM users WHERE user_id=? AND server_id=?');
+
+        removeUser.run([member.user.id, member.guild.id], (err) => {
+            if (err) {
+                console.log(err);
+            }
+            removeUser.finalize();
+        });
+    }
+}
+
+function AddServerToDatabase(guild) {
+    let db = utilities.openDatabase();
+    let insertServer = db.prepare('INSERT OR REPLACE INTO servers VALUES(?,?)');
+
+    insertServer.run([guild.id, guild.name], (err) => {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            for (const [memberID, member] of guild.members.cache) {
+                AddMemberToDatabase(member);
+            }
+        }
+        insertServer.finalize();
+    });
+}
+
+function RemoveServerFromDatabase(guild) {
+    let db = utilities.openDatabase();
+    let deleteServer = db.prepare('DELETE FROM servers WHERE server_id=?');
+
+    deleteServer.run([guild.id], (err) => {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            for (const [memberID, member] of guild.members.cache) {
+                RemoveMemberFromDatabase(member);
+            }
+        }
+        deleteServer.finalize();
+    });
+}
 
 client.commands = utilities.getCommandsCollection();
 client.on('ready', () => {
@@ -19,40 +77,26 @@ client.on('ready', () => {
     CreateServersTable();
 
     function CreateServersTable() {
-        db.run('CREATE TABLE IF NOT EXISTS servers(server_id INTEGER PRIMARY KEY, server_name TEXT NOT NULL)', CreateUsersTable);
+        db.run('DROP TABLE IF EXISTS servers', () => {
+            db.run('CREATE TABLE IF NOT EXISTS servers(server_id INTEGER PRIMARY KEY, server_name TEXT NOT NULL)', CreateUsersTable);
+        });
     }
 
     function CreateUsersTable() {
-        db.run('CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, server_id INTEGER NOT NULL, user_name TEXT NOT NULL, UNIQUE(user_id, server_id))', CreateQuestionsTable);
+        db.run('DROP TABLE IF EXISTS users', () => {
+            db.run('CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, server_id INTEGER NOT NULL, user_name TEXT NOT NULL, UNIQUE(user_id, server_id))', CreateQuestionsTable);
+        });
     }
 
     function CreateQuestionsTable() {
+        // Questions table shouldn't be deleted so that server based settings can be persistent
         db.run('CREATE TABLE IF NOT EXISTS questions(question_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, question TEXT NOT NULL, answer TEXT NOT NULL, UNIQUE(server_id, question))');
         FillTables();
     }
 
     function FillTables() {
         for (const [guildID, guild] of client.guilds.cache) {
-            let insertServer = db.prepare('INSERT OR REPLACE INTO servers VALUES(?,?)'); // replace because server name can be changed
-            insertServer.run([guildID, guild.name], (serverInsertErr) => {
-                if (serverInsertErr) {
-                    console.log(serverInsertErr);
-                }
-                else {
-                    for (const [memberID, member] of guild.members.cache) {
-                        if (!member.user.bot) {
-                            let insertUser = db.prepare('INSERT OR REPLACE INTO users VALUES(?,?,?)');
-                            insertUser.run([memberID, guildID, member.user.tag], (userInsertErr) => {
-                                if (userInsertErr) {
-                                    console.log(userInsertErr);
-                                }
-                                insertUser.finalize();
-                            });
-                        }
-                    }
-                }
-                insertServer.finalize();
-            });
+            AddServerToDatabase(guild);
         }
     }
     db.close();
@@ -60,37 +104,36 @@ client.on('ready', () => {
     console.log('Bot is ready!');
 });
 
+client.on('guildMemberAdd', member => {
+    AddMemberToDatabase(member);
+});
+
+client.on('guildMemberRemove', member => {
+    RemoveMemberFromDatabase(member);
+});
+
+client.on('guildMemberUpdate', member => {
+    AddMemberToDatabase(member);
+});
+
+client.on('guildCreate', guild => {
+    AddServerToDatabase(guild);
+});
+
+client.on('guildDelete', guild => {
+    RemoveServerFromDatabase(guild);
+});
+
+client.on('guildUpdate', guild => {
+    AddServerToDatabase(guild);
+});
+
 client.on('message', message => {
-    let db = utilities.openDatabase();
-    let userid = message.author.id;
-    let uname = message.author.tag;
-
-    if (message.content == '.getData') {
-        let query = 'SELECT * FROM data WHERE userid = ?';
-        db.get(query, [userid], (err, row) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            if (row === undefined) {
-                let insertedData = db.prepare('INSERT INTO data VALUES(?,?,?)');
-                insertedData.run(userid, uname, 'none');
-                insertedData.finalize();
-                db.close();
-                return;
-            }
-            else {
-                let userid2 = row.userid;
-                let word = row.word;
-                console.log(word);
-            }
-        });
-    }
-
-    if (message.content.startsWith('.change')) {
-        let word = message.content.slice(8);
-        db.run('UPDATE data SET word = ? WHERE userid = ?', [word, userid]);
-    }
+    // let db = utilities.openDatabase();
+    // if (message.content.startsWith('.change')) {
+    //     let word = message.content.slice(8);
+    //     db.run('UPDATE data SET word = ? WHERE userid = ?', [word, userid]);
+    // }
 
     if (!message.author.bot) {
         if (message.content.startsWith(prefix)) {

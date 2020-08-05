@@ -18,6 +18,6 @@ module.exports.getCommandsCollection = function () {
     return commands;
 };
 
-module.exports.openDatabase = function (callback) {
+module.exports.openDatabase = function () {
     return new sqlite.Database('./data.db', sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE);
 }
