@@ -142,12 +142,6 @@ client.on('guildUpdate', (guild) => {
 });
 
 client.on('message', (message) => {
-	// let db = utilities.openDatabase();
-	// if (message.content.startsWith('.change')) {
-	//     let word = message.content.slice(8);
-	//     db.run('UPDATE data SET word = ? WHERE userid = ?', [word, userid]);
-	// }
-
 	if (!message.author.bot) {
 		if (message.content.startsWith(prefix)) {
 			const args = message.content.slice(prefix.length).split(/ +/);
@@ -156,19 +150,20 @@ client.on('message', (message) => {
 			if (client.commands.has(commandName)) {
 				const command = client.commands.get(commandName);
 
-				if (!command.args.includes(args.length)) {
-					// invalid number of arguments
-					var reply = `${localization.response_invalid_argument_count}\n${localization.response_proper_command} \`${prefix}${command.name} ${command.usage}\``;
-					message.reply(reply);
-				} else {
-					// proper command usage, execute command
-					try {
-						command.execute(message, args);
-					} catch (error) {
-						console.error(error);
-						message.reply(localization.response_command_failed);
-					}
-				}
+				// if (!command.args.includes(args.length)) {
+				// 	// invalid number of arguments
+				// 	var reply = `${localization.response_invalid_argument_count}\n${localization.response_proper_command} \`${prefix}${command.name} ${command.usage}\``;
+				// 	message.reply(reply);
+				// } else {
+				// 	// proper command usage, execute command
+				// 	try {
+				// 		command.execute(message, args);
+				// 	} catch (error) {
+				// 		console.error(error);
+				// 		message.reply(localization.response_command_failed);
+				// 	}
+				// }
+				command.execute(message, args);
 			}
 		} else if (message.mentions.users.has(client.user.id)) {
 			// Mentioned bot

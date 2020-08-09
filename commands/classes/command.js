@@ -8,7 +8,10 @@ module.exports = class Command extends SimpleCommand {
 
 	// Avoid overriding, override execute_internal instead
 	execute(message, args) {
-		if (this.args.includes(args.length)) {
+		if (
+			this.args.includes(args.length) ||
+			args.length > Math.max.apply(Math, this.args)
+		) {
 			let subCommands = this.getSubCommands();
 			let subCommand = subCommands.get(args[0]);
 

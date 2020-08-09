@@ -4,21 +4,21 @@ const utilites = require('../../utilities');
 class AskMe_Add extends SubCommand {
 	execute_internal(message, args) {
 		let db = utilites.openDatabase();
-		let insertQuestion = db.prepare(
-			'INSERT INTO questions(server_id, question, answer) VALUES(?,?,?)'
+		let updateQuestion = db.prepare(
+			'UPDATE questions SET answer = ? WHERE server_id = ? AND question = ?'
 		);
 
-		insertQuestion.run(
-			[message.guild.id, args[0], args.slice(1).join(' ')],
+		updateQuestion.run(
+			[args.slice(1).join(' '), message.guild.id, args[0]],
 			(err) => {
 				if (err) {
 					console.log(err);
 				}
 			}
 		);
-		insertQuestion.finalize();
+		updateQuestion.finalize();
 		db.close();
 	}
 }
 
-module.exports = new AskMe_Add('add', 'Desc', [2], 'Usage');
+module.exports = new AskMe_Add('edit', 'Desc', [2], 'Usage');
