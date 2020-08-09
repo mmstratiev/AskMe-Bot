@@ -9,7 +9,7 @@
   "author": "Miroslav Stratiev",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^12.2.0",
-    "sqlite3": "^5.0.0"
+    "better-sqlite3": "^7.1.0",
+    "discord.js": "^12.2.0"
   }
 }

@@ -9,108 +9,91 @@ const client = new discord.Client();
 function AddMemberToDatabase(member) {
 	if (!member.bot) {
 		let db = utilities.openDatabase();
-		let insertUser = db.prepare(
-			'INSERT OR REPLACE INTO users VALUES(?,?,?)'
-		);
-
-		insertUser.run(
-			[member.user.id, member.guild.id, member.user.tag],
-			(err) => {
-				if (err) {
-					console.log(err);
-				}
-				insertUser.finalize();
-			}
-		);
+		try {
+			db.prepare('INSERT OR REPLACE INTO users VALUES(?,?,?)').run([
+				member.user.id,
+				member.guild.id,
+				member.user.tag,
+			]);
+		} catch (error) {
+			console.log(error);
+		} finally {
+			db.close();
+		}
 	}
 }
 
 function RemoveMemberFromDatabase(member) {
 	if (!member.bot) {
 		let db = utilities.openDatabase();
-		let removeUser = db.prepare(
-			'DELETE FROM users WHERE user_id=? AND server_id=?'
-		);
-
-		removeUser.run([member.user.id, member.guild.id], (err) => {
-			if (err) {
-				console.log(err);
-			}
-			removeUser.finalize();
-		});
+		try {
+			db.prepare(
+				'DELETE FROM users WHERE user_id=? AND server_id=?'
+			).run([member.user.id, member.guild.id]);
+		} catch (error) {
+			console.log(error);
+		} finally {
+			db.close();
+		}
 	}
 }
 
 function AddServerToDatabase(guild) {
 	let db = utilities.openDatabase();
-	let insertServer = db.prepare('INSERT OR REPLACE INTO servers VALUES(?,?)');
+	try {
+		db.prepare('INSERT OR REPLACE INTO servers VALUES(?,?)').run([
+			guild.id,
+			guild.name,
+		]);
 
-	insertServer.run([guild.id, guild.name], (err) => {
-		if (err) {
-			console.log(err);
-		} else {
-			for (const [memberID, member] of guild.members.cache) {
-				AddMemberToDatabase(member);
-			}
+		for (const [memberID, member] of guild.members.cache) {
+			AddMemberToDatabase(member);
 		}
-		insertServer.finalize();
-	});
+	} catch (error) {
+		console.log(error);
+	} finally {
+		db.close();
+	}
 }
 
 function RemoveServerFromDatabase(guild) {
-	let db = utilities.openDatabase();
-	let deleteServer = db.prepare('DELETE FROM servers WHERE server_id=?');
+	try {
+		db.prepare('DELETE FROM servers WHERE server_id=?').run([guild.id]);
 
-	deleteServer.run([guild.id], (err) => {
-		if (err) {
-			console.log(err);
-		} else {
-			for (const [memberID, member] of guild.members.cache) {
-				RemoveMemberFromDatabase(member);
-			}
+		for (const [memberID, member] of guild.members.cache) {
+			RemoveMemberFromDatabase(member);
 		}
-		deleteServer.finalize();
-	});
+	} catch (error) {
+		console.log(error);
+	} finally {
+		db.close();
+	}
 }
 
 client.commands = utilities.getCommandsCollection();
 client.on('ready', () => {
 	client.user.setActivity('people Tag Me!', { type: 'WATCHING' });
 
-	// Create the database tables and fills them
 	let db = utilities.openDatabase();
-	CreateServersTable();
 
-	function CreateServersTable() {
-		db.run('DROP TABLE IF EXISTS servers', () => {
-			db.run(
-				'CREATE TABLE IF NOT EXISTS servers(server_id INTEGER PRIMARY KEY, server_name TEXT NOT NULL)',
-				CreateUsersTable
-			);
-		});
-	}
+	// Create/update tables
+	db.prepare('DROP TABLE IF EXISTS servers').run();
+	db.prepare(
+		'CREATE TABLE servers(server_id INTEGER PRIMARY KEY, server_name TEXT NOT NULL)'
+	).run();
 
-	function CreateUsersTable() {
-		db.run('DROP TABLE IF EXISTS users', () => {
-			db.run(
-				'CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, server_id INTEGER NOT NULL, user_name TEXT NOT NULL, UNIQUE(user_id, server_id))',
-				CreateQuestionsTable
-			);
-		});
-	}
+	db.prepare('DROP TABLE IF EXISTS users').run();
+	db.prepare(
+		'CREATE TABLE users(user_id INTEGER PRIMARY KEY, server_id INTEGER NOT NULL, user_name TEXT NOT NULL, UNIQUE(user_id, server_id))'
+	).run();
 
-	function CreateQuestionsTable() {
-		// Questions table shouldn't be deleted so that server based settings can be persistent
-		db.run(
-			'CREATE TABLE IF NOT EXISTS questions(question_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, question TEXT NOT NULL, answer TEXT NOT NULL, UNIQUE(server_id, question))'
-		);
-		FillTables();
-	}
+	// Questions table shouldn't be deleted so that server based settings can be persistent
+	db.prepare(
+		'CREATE TABLE IF NOT EXISTS questions(question_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, question TEXT NOT NULL, answer TEXT NOT NULL, UNIQUE(server_id, question))'
+	).run();
 
-	function FillTables() {
-		for (const [guildID, guild] of client.guilds.cache) {
-			AddServerToDatabase(guild);
-		}
+	for (const [guildID, guild] of client.guilds.cache) {
+		AddServerToDatabase(guild);
 	}
 	db.close();
 
@@ -150,7 +133,7 @@ client.on('message', (message) => {
 			if (client.commands.has(commandName)) {
 				try {
 					const command = client.commands.get(commandName);
-					await command.execute(message, args);
+					command.execute(message, args);
 				} catch (error) {
 					console.log(error);
 					message.reply(localization.response_command_failed);

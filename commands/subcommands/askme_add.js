@@ -4,20 +4,9 @@ const utilites = require('../../utilities');
 class AskMe_Add extends SubCommand {
 	execute_internal(message, args) {
 		let db = utilites.openDatabase();
-		let insertQuestion = db.prepare(
+		db.prepare(
 			'INSERT INTO questions(server_id, question, answer) VALUES(?,?,?)'
-		);
-
-		insertQuestion.run(
-			[message.guild.id, args[0], args.slice(1).join(' ')],
-			(err) => {
-				insertQuestion.finalize();
-				db.close();
-				if (err) {
-					throw err;
-				}
-			}
-		);
+		).run([message.guild.id, args[0], args.slice(1).join(' ')]);
 	}
 }
 
