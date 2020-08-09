@@ -9,12 +9,12 @@ class AskMe_Add extends SubCommand {
 		);
 
 		deleteQuestion.run([message.guild.id, args[0]], (err) => {
+			deleteQuestion.finalize();
+			db.close();
 			if (err) {
-				console.log(err);
+				throw err;
 			}
 		});
-		deleteQuestion.finalize();
-		db.close();
 	}
 }
 

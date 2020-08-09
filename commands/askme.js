@@ -24,9 +24,10 @@ class AskMeCommand extends Command {
 			let query =
 				'SELECT Question question FROM questions WHERE server_id = ?';
 			db.all(query, [message.guild.id], (err, rows) => {
+				db.close();
+
 				if (err) {
-					messageReply =
-						'There was an error, please report this to server admins!';
+					throw err;
 				} else if (rows.length > 0) {
 					messageReply =
 						'What would you like to know? You can ask me any of the following questions: \n';
@@ -43,10 +44,11 @@ class AskMeCommand extends Command {
 			let query =
 				'SELECT Answer answer FROM questions WHERE server_id = ? AND question = ?';
 			db.get(query, [message.guild.id, args[0]], (err, row) => {
+				db.close();
+
 				if (err) {
-					messageReply =
-						'There was an error, please report this to server admins!';
-				} else {
+					throw err;
+				} else if (row) {
 					messageReply = row.answer;
 				}
 				message.reply(messageReply);

@@ -8,10 +8,7 @@ module.exports = class Command extends SimpleCommand {
 
 	// Avoid overriding, override execute_internal instead
 	execute(message, args) {
-		if (
-			this.args.includes(args.length) ||
-			args.length > Math.max.apply(Math, this.args)
-		) {
+		if (this.matchArguments(args)) {
 			let subCommands = this.getSubCommands();
 			let subCommand = subCommands.get(args[0]);
 
@@ -21,6 +18,8 @@ module.exports = class Command extends SimpleCommand {
 			} else {
 				this.execute_internal(message, args);
 			}
+		} else {
+			message.reply(this.getInvalidArgumentsReply());
 		}
 	}
 

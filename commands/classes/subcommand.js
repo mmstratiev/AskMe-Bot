@@ -6,11 +6,10 @@ module.exports = class SubCommand extends SimpleCommand {
 	}
 
 	execute(message, args) {
-		if (
-			this.args.includes(args.length) ||
-			args.length > Math.max.apply(Math, this.args)
-		) {
+		if (this.matchArguments(args)) {
 			this.execute_internal(message, args);
+		} else {
+			message.reply(this.getInvalidArgumentsReply());
 		}
 	}
 

@@ -11,13 +11,13 @@ class AskMe_Add extends SubCommand {
 		updateQuestion.run(
 			[args.slice(1).join(' '), message.guild.id, args[0]],
 			(err) => {
+				updateQuestion.finalize();
+				db.close();
 				if (err) {
-					console.log(err);
+					throw err;
 				}
 			}
 		);
-		updateQuestion.finalize();
-		db.close();
 	}
 }
 

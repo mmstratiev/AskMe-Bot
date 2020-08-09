@@ -148,22 +148,13 @@ client.on('message', (message) => {
 			const commandName = args.shift().toLowerCase();
 
 			if (client.commands.has(commandName)) {
-				const command = client.commands.get(commandName);
-
-				// if (!command.args.includes(args.length)) {
-				// 	// invalid number of arguments
-				// 	var reply = `${localization.response_invalid_argument_count}\n${localization.response_proper_command} \`${prefix}${command.name} ${command.usage}\``;
-				// 	message.reply(reply);
-				// } else {
-				// 	// proper command usage, execute command
-				// 	try {
-				// 		command.execute(message, args);
-				// 	} catch (error) {
-				// 		console.error(error);
-				// 		message.reply(localization.response_command_failed);
-				// 	}
-				// }
-				command.execute(message, args);
+				try {
+					const command = client.commands.get(commandName);
+					await command.execute(message, args);
+				} catch (error) {
+					console.log(error);
+					message.reply(localization.response_command_failed);
+				}
 			}
 		} else if (message.mentions.users.has(client.user.id)) {
 			// Mentioned bot
