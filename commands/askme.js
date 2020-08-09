@@ -10,10 +10,6 @@ const Command = require('./classes/command');
 
 class AskMeCommand extends Command {
 	execute_internal(message, args) {
-		console.log(
-			`User ${message.author.username} issued command ${message.content} in channel ${message.channel.name}.`
-		);
-
 		let db = utilities.openDatabase();
 
 		let messageReply = '';

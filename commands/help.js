@@ -8,10 +8,6 @@ const Command = require('./classes/command');
 
 class HelpCommand extends Command {
 	execute_internal(message, args) {
-		console.log(
-			`User ${message.author.username} issued command ${message.content} in channel ${message.channel.name}.`
-		);
-
 		const commands = utilities.getCommandsCollection();
 		let messageReply = '';
 

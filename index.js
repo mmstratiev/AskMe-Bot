@@ -135,7 +135,7 @@ client.on('message', (message) => {
 					const command = client.commands.get(commandName);
 					command.execute(message, args);
 				} catch (error) {
-					console.log(error);
+					console.error(error);
 					message.reply(localization.response_command_failed);
 				}
 			}
