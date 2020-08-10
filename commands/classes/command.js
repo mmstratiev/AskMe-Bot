@@ -2,7 +2,7 @@ const fs = require('fs');
 const SimpleCommand = require('./simple_command');
 
 module.exports = class Command extends SimpleCommand {
-	constructor(name, description, args, usage, permissions) {
+	constructor(name, description, args = [], usage = [], permissions = []) {
 		super(name, description, args, usage, permissions);
 	}
 
@@ -30,6 +30,7 @@ module.exports = class Command extends SimpleCommand {
 
 	execute_internal(message, args) {}
 
+	// TODO: Instead of using file names to find sub commands for given parent, create and use property 'parent_name' for sub commands
 	getSubCommands() {
 		let subCommands = new Map();
 		let subCommandRegex = new RegExp(`^${this.name}_.+.js$`);

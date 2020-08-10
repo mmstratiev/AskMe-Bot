@@ -1,4 +1,7 @@
-const { help_command_usage } = require('../localization.json');
+const {
+	empty_command_usage,
+	help_command_usage,
+} = require('../localization.json');
 const { help_command } = require('../commands.json');
 
 const { prefix } = require('../config.json');
@@ -6,6 +9,7 @@ const utilities = require('../utilities.js');
 
 const Command = require('./classes/command');
 
+// TODO: Update this command last after everything else is done
 class HelpCommand extends Command {
 	execute_internal(message, args) {
 		const commands = utilities.getCommandsCollection();
@@ -32,5 +36,5 @@ module.exports = new HelpCommand(
 	help_command,
 	'Displays help about all available commands or specific command.',
 	[0, 1],
-	help_command_usage
+	[empty_command_usage, help_command_usage]
 );

@@ -20,4 +20,4 @@ class AskMe_Add extends SubCommand {
 	}
 }
 
-module.exports = new AskMe_Add('add', 'Desc', [2], 'Usage', ['MANAGE_GUILD']);
+module.exports = new AskMe_Add('add', 'Desc', [2], ['Usage'], ['MANAGE_GUILD']);

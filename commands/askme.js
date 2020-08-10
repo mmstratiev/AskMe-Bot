@@ -1,4 +1,5 @@
 const {
+	empty_command_usage,
 	main_command_usage,
 	response_unknown_question,
 } = require('../localization.json');
@@ -54,5 +55,5 @@ module.exports = new AskMeCommand(
 	main_command,
 	'Answers the asked questions.',
 	[0, 1],
-	main_command_usage
+	[empty_command_usage, main_command_usage]
 );
