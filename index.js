@@ -4,7 +4,16 @@ const utilities = require('./utilities.js');
 const { prefix, token } = require('./config.json');
 const { help_command } = require('./commands.json');
 
+const paypalServer = require('./paypal/paypal_server');
+const paypalServerDomain = require('./paypal/paypal_server_domain');
+
 const client = new discord.Client();
+
+paypalServer.listen(paypalServerDomain.port, () => {
+	console.log(
+		`Paypal Server running in http://localhost:${paypalServerDomain.port}`
+	);
+});
 
 function AddMemberToDatabase(member) {
 	if (!member.bot) {
