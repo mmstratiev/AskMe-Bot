@@ -11,7 +11,7 @@ const client = new discord.Client();
 
 paypalServer.listen(paypalServerDomain.port, () => {
 	console.log(
-		`Paypal Server running in http://localhost:${paypalServerDomain.port}`
+		`Paypal Server running in ${paypalServerDomain.address}:${paypalServerDomain.port}`
 	);
 });
 
@@ -19,8 +19,13 @@ function AddMemberToDatabase(member) {
 	if (!member.bot) {
 		let db = utilities.openDatabase();
 		try {
-			db.prepare('INSERT OR REPLACE INTO users VALUES(?,?,?)').run([
+			db.prepare(
+				`INSERT INTO users(id, server_id, user_name) VALUES(?,?,?)
+				ON CONFLICT(id) DO UPDATE SET server_id=?, user_name=?`
+			).run([
 				member.user.id,
+				member.guild.id,
+				member.user.tag,
 				member.guild.id,
 				member.user.tag,
 			]);
@@ -50,10 +55,10 @@ function RemoveMemberFromDatabase(member) {
 function AddServerToDatabase(guild) {
 	let db = utilities.openDatabase();
 	try {
-		db.prepare('INSERT OR REPLACE INTO servers VALUES(?,?)').run([
-			guild.id,
-			guild.name,
-		]);
+		db.prepare(
+			`INSERT INTO servers(id, server_name) VALUES(?,?)
+			ON CONFLICT(id) DO UPDATE SET server_name=?`
+		).run([guild.id, guild.name, guild.name]);
 
 		for (const [memberID, member] of guild.members.cache) {
 			AddMemberToDatabase(member);
@@ -68,10 +73,6 @@ function AddServerToDatabase(guild) {
 function RemoveServerFromDatabase(guild) {
 	try {
 		db.prepare('DELETE FROM servers WHERE server_id=?').run([guild.id]);
-
-		for (const [memberID, member] of guild.members.cache) {
-			RemoveMemberFromDatabase(member);
-		}
 	} catch (error) {
 		console.log(error);
 	} finally {
@@ -86,37 +87,73 @@ client.on('ready', () => {
 	let db = utilities.openDatabase();
 
 	// Create/update tables
-	db.prepare('DROP TABLE IF EXISTS servers').run();
 	db.prepare(
-		'CREATE TABLE servers(server_id INTEGER PRIMARY KEY, server_name TEXT NOT NULL)'
+		`CREATE TABLE IF NOT EXISTS servers(
+			id INTEGER PRIMARY KEY, 
+			server_name TEXT NOT NULL)`
 	).run();
 
-	db.prepare('DROP TABLE IF EXISTS users').run();
 	db.prepare(
-		'CREATE TABLE users(user_id INTEGER PRIMARY KEY, server_id INTEGER NOT NULL, user_name TEXT NOT NULL, UNIQUE(user_id, server_id))'
+		`CREATE TABLE IF NOT EXISTS users(
+			id INTEGER PRIMARY KEY, 
+			server_id INTEGER NOT NULL, 
+			user_name TEXT NOT NULL, 
+			UNIQUE(id, server_id), 
+			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE)`
 	).run();
 
+	// carts from previous sessions are emptied on bot startup
 	db.prepare('DROP TABLE IF EXISTS carts').run();
 	db.prepare(
-		'CREATE TABLE IF NOT EXISTS carts(cart_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, user_id INTEGER NOT NULL, UNIQUE(server_id, user_id))'
-	).run();
-
-	db.prepare('DROP TABLE IF EXISTS cart_items').run();
-	db.prepare(
-		'CREATE TABLE IF NOT EXISTS cart_items(cart_item_id INTEGER PRIMARY KEY AUTOINCREMENT, cart_id INTEGER NOT NULL, item_id INTEGER NOT NULL, item_quantity INTEGER NOT NULL)'
-	).run();
-
-	// These tables shouldn't be deleted so that server based settings can be persistent
-	db.prepare(
-		'CREATE TABLE IF NOT EXISTS categories(category_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, category_name TEXT NOT NULL, category_description TEXT NOT NULL, UNIQUE(server_id, category_name))'
+		`CREATE TABLE IF NOT EXISTS carts(
+			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			server_id INTEGER NOT NULL, 
+			user_id INTEGER NOT NULL, 
+			UNIQUE(server_id, user_id), 
+			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE,
+			FOREIGN KEY (user_id) references users(id) ON DELETE CASCADE)`
 	).run();
 
 	db.prepare(
-		'CREATE TABLE IF NOT EXISTS items(item_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, category_id INTEGER NOT NULL, item_name TEXT NOT NULL, item_description TEXT NOT NULL, item_price REAL NOT NULL, UNIQUE(server_id, item_name))'
+		`CREATE TABLE IF NOT EXISTS cart_items(
+			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			cart_id INTEGER NOT NULL, 
+			item_id INTEGER NOT NULL, 
+			item_quantity INTEGER NOT NULL,
+			FOREIGN KEY (cart_id) references carts(id) ON DELETE CASCADE,
+			FOREIGN KEY (item_id) references items(id) ON DELETE CASCADE)`
 	).run();
 
 	db.prepare(
-		'CREATE TABLE IF NOT EXISTS questions(question_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, question TEXT NOT NULL, answer TEXT NOT NULL, UNIQUE(server_id, question))'
+		`CREATE TABLE IF NOT EXISTS categories(
+			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			server_id INTEGER NOT NULL, 
+			category_name TEXT NOT NULL, 
+			category_description TEXT NOT NULL, 
+			UNIQUE(server_id, category_name), 
+			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE)`
+	).run();
+
+	db.prepare(
+		`CREATE TABLE IF NOT EXISTS items(
+			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			server_id INTEGER NOT NULL, 
+			category_id INTEGER NOT NULL, 
+			item_name TEXT NOT NULL, 
+			item_description TEXT NOT NULL, 
+			item_price REAL NOT NULL, 
+			UNIQUE(server_id, item_name), 
+			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE,
+			FOREIGN KEY (category_id) references categories(id) ON DELETE CASCADE)`
+	).run();
+	db.prepare(
+		`CREATE TABLE IF NOT EXISTS questions(
+			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			server_id INTEGER NOT NULL, 
+			question TEXT NOT NULL, 
+			answer TEXT NOT NULL, 
+			UNIQUE(server_id, question), 
+			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE)`
 	).run();
 
 	for (const [guildID, guild] of client.guilds.cache) {

@@ -6,7 +6,7 @@ class AskMe_Add extends SubCommand {
 		let db = utilites.openDatabase();
 		let questionRow = db
 			.prepare(
-				'SELECT * FROM questions WHERE server_ID = ? AND question = ?'
+				'SELECT * FROM questions WHERE server_id = ? AND question = ?'
 			)
 			.get([message.guild.id, args[0]]);
 

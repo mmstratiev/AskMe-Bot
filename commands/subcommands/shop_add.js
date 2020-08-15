@@ -69,7 +69,7 @@ class Shop_Add extends SubCommand {
 											'INSERT INTO items(server_id, category_id, item_name, item_description, item_price) VALUES(?,?,?,?,?)'
 										).run([
 											message.guild.id,
-											categoryRow.category_id,
+											categoryRow.id,
 											filteredName.first().content,
 											filteredDesc.first().content,
 											parseFloat(
