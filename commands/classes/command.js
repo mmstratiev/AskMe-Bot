@@ -7,19 +7,23 @@ module.exports = class Command extends SimpleCommand {
 	}
 
 	// Avoid overriding, override execute_internal instead
-	execute(message, args) {
-		SimpleCommand.prototype.execute(message, args);
+	async execute(message, args) {
+		await SimpleCommand.prototype.execute(message, args);
 		if (this.matchPermissions(message.member.permissions)) {
 			if (this.matchArguments(args)) {
 				let subCommands = this.getSubCommands();
 				let subCommand = subCommands.get(args[0]);
 
-				if (subCommand) {
-					let subCommandArgs = args.slice(1);
-					subCommand.execute(message, subCommandArgs);
-				} else {
-					this.execute_internal(message, args);
-				}
+				// try {
+					if (subCommand) {
+						let subCommandArgs = args.slice(1);
+						await subCommand.execute(message, subCommandArgs);
+					} else {
+						await this.execute_internal(message, args);
+					}
+				// } catch (error) {
+				// 	throw new Error(error);
+				// }
 			} else {
 				message.reply(this.getInvalidArgumentsReply());
 			}
@@ -28,7 +32,7 @@ module.exports = class Command extends SimpleCommand {
 		}
 	}
 
-	execute_internal(message, args) {}
+	async execute_internal(message, args) {}
 
 	// TODO: Instead of using file names to find sub commands for given parent, create and use property 'parent_name' for sub commands
 	getSubCommands() {

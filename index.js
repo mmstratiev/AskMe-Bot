@@ -96,7 +96,25 @@ client.on('ready', () => {
 		'CREATE TABLE users(user_id INTEGER PRIMARY KEY, server_id INTEGER NOT NULL, user_name TEXT NOT NULL, UNIQUE(user_id, server_id))'
 	).run();
 
-	// Questions table shouldn't be deleted so that server based settings can be persistent
+	db.prepare('DROP TABLE IF EXISTS carts').run();
+	db.prepare(
+		'CREATE TABLE IF NOT EXISTS carts(cart_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, user_id INTEGER NOT NULL, UNIQUE(server_id, user_id))'
+	).run();
+
+	db.prepare('DROP TABLE IF EXISTS cart_items').run();
+	db.prepare(
+		'CREATE TABLE IF NOT EXISTS cart_items(cart_item_id INTEGER PRIMARY KEY AUTOINCREMENT, cart_id INTEGER NOT NULL, item_id INTEGER NOT NULL, item_quantity INTEGER NOT NULL)'
+	).run();
+
+	// These tables shouldn't be deleted so that server based settings can be persistent
+	db.prepare(
+		'CREATE TABLE IF NOT EXISTS categories(category_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, category_name TEXT NOT NULL, category_description TEXT NOT NULL, UNIQUE(server_id, category_name))'
+	).run();
+
+	db.prepare(
+		'CREATE TABLE IF NOT EXISTS items(item_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, category_id INTEGER NOT NULL, item_name TEXT NOT NULL, item_description TEXT NOT NULL, item_price REAL NOT NULL, UNIQUE(server_id, item_name))'
+	).run();
+
 	db.prepare(
 		'CREATE TABLE IF NOT EXISTS questions(question_id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, question TEXT NOT NULL, answer TEXT NOT NULL, UNIQUE(server_id, question))'
 	).run();
@@ -140,13 +158,11 @@ client.on('message', (message) => {
 			const commandName = args.shift().toLowerCase();
 
 			if (client.commands.has(commandName)) {
-				try {
-					const command = client.commands.get(commandName);
-					command.execute(message, args);
-				} catch (error) {
+				const command = client.commands.get(commandName);
+				command.execute(message, args).catch((error) => {
 					console.error(error);
 					message.reply(localization.response_command_failed);
-				}
+				});
 			}
 		} else if (message.mentions.users.has(client.user.id)) {
 			// Mentioned bot

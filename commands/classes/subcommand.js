@@ -5,11 +5,11 @@ module.exports = class SubCommand extends SimpleCommand {
 		super(name, description, args, usage, permissions);
 	}
 
-	execute(message, args) {
+	async execute(message, args) {
 		SimpleCommand.prototype.execute(message, args);
 		if (this.matchPermissions(message.member.permissions)) {
 			if (this.matchArguments(args)) {
-				this.execute_internal(message, args);
+				await this.execute_internal(message, args);
 			} else {
 				message.reply(this.getInvalidArgumentsReply());
 			}
@@ -18,5 +18,5 @@ module.exports = class SubCommand extends SimpleCommand {
 		}
 	}
 
-	execute_internal(message, args) {}
+	async execute_internal(message, args) {}
 };

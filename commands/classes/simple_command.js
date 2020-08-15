@@ -15,7 +15,7 @@ module.exports = class SimpleCommand {
 		this.permissions = permissions;
 	}
 
-	execute(message, args) {
+	async execute(message, args) {
 		console.log(
 			`Command ${message.content} was issued by ${message.author.tag} in ${message.guild.name} #${message.channel.name}.`
 		);

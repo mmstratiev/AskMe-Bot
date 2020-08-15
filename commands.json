@@ -1,5 +1,6 @@
 {
     "main_command": "askme",
     "help_command": "help",
-    "shop_command": "shop"
+    "shop_command": "shop",
+    "cart_command": "cart"
 }
