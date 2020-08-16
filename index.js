@@ -29,6 +29,11 @@ function AddMemberToDatabase(member) {
 				member.guild.id,
 				member.user.tag,
 			]);
+
+			db.prepare(
+				`INSERT INTO carts(server_id, user_id) VALUES(?,?)
+				ON CONFLICT(server_id, user_id) DO NOTHING`
+			).run([member.guild.id, member.user.id]);
 		} catch (error) {
 			console.log(error);
 		} finally {
@@ -120,6 +125,7 @@ client.on('ready', () => {
 			cart_id INTEGER NOT NULL, 
 			item_id INTEGER NOT NULL, 
 			item_quantity INTEGER NOT NULL,
+			UNIQUE(cart_id, item_id),
 			FOREIGN KEY (cart_id) references carts(id) ON DELETE CASCADE,
 			FOREIGN KEY (item_id) references items(id) ON DELETE CASCADE)`
 	).run();
