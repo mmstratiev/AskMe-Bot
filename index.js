@@ -107,8 +107,6 @@ client.on('ready', () => {
 			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE)`
 	).run();
 
-	// carts from previous sessions are emptied on bot startup
-	db.prepare('DROP TABLE IF EXISTS carts').run();
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS carts(
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -152,6 +150,16 @@ client.on('ready', () => {
 			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE,
 			FOREIGN KEY (category_id) references categories(id) ON DELETE CASCADE)`
 	).run();
+
+	db.prepare(`CREATE TABLE IF NOT EXISTS payments(
+		id TEXT PRIMARY KEY,
+		server_id INTEGER NOT NULL,
+		user_id INTEGER NOT NULL,
+		payment_status TEXT NOT NULL,
+		payment_time TEXT NOT NULL,
+		FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE,
+		FOREIGN KEY (user_id) references users(id) ON DELETE CASCADE)`);
+
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS questions(
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 

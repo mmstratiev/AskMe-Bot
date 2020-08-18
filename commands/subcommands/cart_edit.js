@@ -35,9 +35,9 @@ class Cart_Edit extends SubCommand {
 				// Get all items that match the ids
 				let itemsRows = db
 					.prepare(
-						'SELECT * FROM items WHERE id IN(?) ORDERED BY item_name'
+						'SELECT * FROM items WHERE id IN(SELECT item_id FROM cart_items WHERE cart_id = ?)'
 					)
-					.all([Array.from(itemIDToCartItem.keys()).join(',')]);
+					.all(cartRow.id);
 
 				// Item name to Item map
 				let itemNameToItem = new Map(
@@ -46,9 +46,7 @@ class Cart_Edit extends SubCommand {
 
 				// Construct Cart message
 				let cartItemsMessage = 'Cart Items:\n';
-				itemsRows.forEach((itemRow) => {
-					cartItemsMessage += itemRow.item_name;
-				});
+				cartItemsMessage += itemsRows.map((itemRow) => [itemRow.item_name]).join(', ');
 
 				const awaitFilter = (m) => m.author.id === message.author.id;
 				const awaitFilterQuantity = (m) =>
