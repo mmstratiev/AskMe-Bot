@@ -8,7 +8,6 @@ const { main_command } = require('../commands.json');
 const utilities = require('../utilities');
 
 const Command = require('./classes/command');
-
 class AskMeCommand extends Command {
 	async execute_internal(message, args) {
 		let db = utilities.openDatabase();

@@ -7,9 +7,9 @@ const { help_command } = require('../commands.json');
 const { prefix } = require('../config.json');
 const utilities = require('../utilities.js');
 
-const Command = require('./classes/command');
 
 // TODO: Update this command last after everything else is done
+const Command = require('./classes/command');
 class HelpCommand extends Command {
 	execute_internal(message, args) {
 		const commands = utilities.getCommandsCollection();

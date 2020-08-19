@@ -1,6 +1,6 @@
-const SubCommand = require('../classes/subcommand');
-const utilites = require('../../utilities');
+const utilities = require('../../utilities');
 
+const SubCommand = require('../classes/subcommand');
 class Shop_Edit extends SubCommand {
 	async execute_internal(message, args) {}
 }

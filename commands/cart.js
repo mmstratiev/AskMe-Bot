@@ -8,13 +8,10 @@ const createOrder = require('../paypal/orders/createOrder');
 const Command = require('./classes/command');
 class CartCommand extends Command {
 	async execute_internal(message, args) {
-		const db = utilities.openDatabase();
+		// TODO:
 	}
 }
 
-module.exports = new CartCommand(
-	cart_command,
-	'Cart'
-	[0],
-	[empty_command_usage]
-);
+module.exports = new CartCommand(cart_command, 'Cart'[0], [
+	empty_command_usage,
+]);

@@ -13,21 +13,15 @@ api.get('/success', (req, res) => {
 
 	let capture = captureOrder
 		.captureOrder(orderID)
-		.then((result) => {
+		.then((captureResponse) => {
 			// TODO: make fancy
-			result.result.purchase_units.forEach((element) => {
+			captureResponse.result.purchase_units.forEach((element) => {
 				console.log(element);
 			});
 
-			// db.prepare(
-			// 	`INSERT INTO payments(item_id, category_id, item_name, item_desc, item_price) VALUES(?,?,?,?,?)`
-			// ).run([
-			// 	itemRow.id,
-			// 	itemRow.category_id,
-			// 	itemRow.item_name,
-			// 	itemRow.item_description,
-			// 	itemRow.item_price,
-			// ]);
+			db.prepare(
+				`UPDATE payments SET payment_status=?, payment_time=DATETIME('now') WHERE id=?`
+			).run([captureResponse.result.status, captureResponse.result.id]);
 
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'text/plain');

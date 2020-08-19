@@ -1,10 +1,9 @@
-const SubCommand = require('../classes/subcommand');
-const utilites = require('../../utilities');
-const { Collection } = require('discord.js');
+const utilities = require('../../utilities');
 
+const SubCommand = require('../classes/subcommand');
 class Shop_Add extends SubCommand {
 	async execute_internal(message, args) {
-		let db = utilites.openDatabase();
+		let db = utilities.openDatabase();
 		const awaitFilter = (m) => m.author.id === message.author.id;
 		const awaitFilterPrice = (m) =>
 			m.author.id === message.author.id && Boolean(parseFloat(m.content));

@@ -1,10 +1,10 @@
-const SubCommand = require('../classes/subcommand');
-const utilites = require('../../utilities');
-const { Collection } = require('discord.js');
+const utilities = require('../../utilities');
+const localization = require('../../localization.json');
 
+const SubCommand = require('../classes/subcommand');
 class Cart_Clear extends SubCommand {
 	async execute_internal(message, args) {
-		const db = utilites.openDatabase();
+		const db = utilities.openDatabase();
 
 		let cartRow = db
 			.prepare(
@@ -16,7 +16,7 @@ class Cart_Clear extends SubCommand {
 			db.prepare('DELETE FROM cart_items WHERE cart_id = ?').run([
 				cartRow.id,
 			]);
-			message.reply('Cart cleared!');
+			message.reply(localization.reply_cart_cleared);
 		} else {
 			throw new Error(
 				"Cart doesn't exist! Should be added on start of the bot!"

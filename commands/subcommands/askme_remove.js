@@ -1,9 +1,9 @@
-const SubCommand = require('../classes/subcommand');
-const utilites = require('../../utilities');
+const utilities = require('../../utilities');
 
+const SubCommand = require('../classes/subcommand');
 class AskMe_Add extends SubCommand {
 	execute_internal(message, args) {
-		let db = utilites.openDatabase();
+		let db = utilities.openDatabase();
 		db.prepare(
 			'DELETE FROM questions WHERE server_id = ? AND question = ?'
 		).run([message.guild.id, args[0]]);

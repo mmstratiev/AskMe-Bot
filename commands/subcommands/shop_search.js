@@ -1,9 +1,10 @@
 const SubCommand = require('../classes/subcommand');
-const utilites = require('../../utilities');
+const utilities = require('../../utilities');
+const localization = require('../../localization.json');
 
 class Shop_Search extends SubCommand {
 	async execute_internal(message, args) {
-		const db = utilites.openDatabase();
+		const db = utilities.openDatabase();
 
 		let cartRow = db
 			.prepare(
@@ -29,7 +30,7 @@ class Shop_Search extends SubCommand {
 			let selectedKeywords = new Array();
 
 			let shopMessageCategories = async function () {
-				let result = 'Categories:\n';
+				let result = `${localization.reply_shop_search_categories}\n`;
 
 				availableCategoriesRows.forEach((availableCategoriesRow) => {
 					if (
@@ -44,13 +45,13 @@ class Shop_Search extends SubCommand {
 			};
 
 			let shopMessageKeywords = async function () {
-				let result = 'Keywords:\n';
+				let result = `${localization.reply_shop_search_keywords}\n`;
 				result += selectedKeywords.join(', ');
 				return result;
 			};
 
 			// Let user select categories to search
-			message.reply('Enter categories:');
+			message.reply(localization.reply_shop_search_categories_prompt);
 
 			let awaitingUserInput = true;
 			while (awaitingUserInput) {
@@ -93,7 +94,7 @@ class Shop_Search extends SubCommand {
 			}
 
 			// Let user select keywords to search
-			message.reply('Enter keywords:');
+			message.reply(localization.reply_shop_search_keywords_prompt);
 
 			awaitingUserInput = true;
 			while (
@@ -151,8 +152,7 @@ class Shop_Search extends SubCommand {
 				.all([selectedKeywords.join(' OR ')]);
 
 			if (matchedVirtualItems.length > 0) {
-				let foundItemsReply =
-					'I found these items matching your search criteria. What would you like to buy?\n';
+				let foundItemsReply = `${localization.reply_shop_search_found_items}\n`;
 
 				matchedVirtualItems.forEach((virtualItem) => {
 					foundItemsReply += `${virtualItem.item_name}\n`;
@@ -189,20 +189,18 @@ class Shop_Search extends SubCommand {
 										1,
 									]);
 									message.reply(
-										'Added item in shopping cart!'
+										localization.reply_shop_search_added_item
 									);
 								} else {
 									message.reply(
-										'Item not found in search results!'
+										localization.reply_shop_search_invalid_item
 									);
 								}
 							}
 						});
 				}
 			} else {
-				message.reply(
-					"I couldn't find any items in the shop that match your search criteria!"
-				);
+				message.reply(localization.reply_shop_search_no_items);
 			}
 		} else {
 			throw new Error(
