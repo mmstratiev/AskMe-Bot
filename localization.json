@@ -27,8 +27,8 @@
 
 	"reply_shop_search_categories": "Categories:",
 	"reply_shop_search_keywords": "Keywords:",
-	"reply_shop_search_categories_prompt": "Enter categories:",
-	"reply_shop_search_keywords_prompt": "Enter keywords:",
+	"reply_shop_search_categories_prompt": "Enter category to mark/unmark for search. Enter `finish` to continue to next step. Enter `cancel` to cancel search.",
+	"reply_shop_search_keywords_prompt": "Enter keyword to add/remove from search criteria. Enter `finish` to see search results. Enter `cancel` to cancel search.",
 	"reply_shop_search_found_items": "I found these items matching your search criteria. What would you like to buy?",
 	"reply_shop_search_added_item": "Added item in shopping cart!",
 	"reply_shop_search_invalid_item": "Item not found in search results!",

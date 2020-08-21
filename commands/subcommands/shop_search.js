@@ -1,6 +1,7 @@
 const SubCommand = require('../classes/subcommand');
 const utilities = require('../../utilities');
 const localization = require('../../localization.json');
+const { MessageEmbed } = require('discord.js');
 
 class Shop_Search extends SubCommand {
 	async execute_internal(message, args) {
@@ -14,12 +15,27 @@ class Shop_Search extends SubCommand {
 
 		if (cartRow) {
 			const awaitFilter = (m) => m.author.id === message.author.id;
-			const awaitConditions = {
-				max: 1,
-				time: 10000,
-				errors: ['time'],
+			const awaitFilterQuantity = (m) => {
+				let result = false;
+				if (m.author.id === message.author.id) {
+					if (!isNaN(parseInt(m.content))) {
+						result = true;
+					} else {
+						m.delete();
+					}
+				}
+				return result;
 			};
 
+			const awaitConditions = {
+				max: 100,
+				idle: 1500,
+			};
+			const awaitConditionsQuantity = {
+				max: 1,
+			};
+
+			// Get all categories in server
 			const availableCategoriesRows = db
 				.prepare(
 					'SELECT * FROM categories WHERE server_id = ? ORDER BY category_name'
@@ -28,104 +44,189 @@ class Shop_Search extends SubCommand {
 
 			let selectedCategories = new Array(); // array of category ids
 			let selectedKeywords = new Array();
+			let messagesToDelete = new Array();
 
-			let shopMessageCategories = async function () {
-				let result = `${localization.reply_shop_search_categories}\n`;
+			const buildCategoriesEmbed = function () {
+				const result = new MessageEmbed()
+					.setColor('#7289da')
+					.setTitle(localization.reply_shop_search_categories)
+					// .setDescription('')
+					.addFields(
+						availableCategoriesRows.map(
+							(availableCategoriesRow) => {
+								const getCategoryEmoji = () => {
+									let result = ':x:';
+									if (
+										selectedCategories.includes(
+											availableCategoriesRow.id
+										)
+									) {
+										result = ':white_check_mark:';
+									}
+									return result;
+								};
 
-				availableCategoriesRows.forEach((availableCategoriesRow) => {
-					if (
-						selectedCategories.includes(availableCategoriesRow.id)
-					) {
-						result += `:white_check_mark: ${availableCategoriesRow.category_name}\n`;
-					} else {
-						result += `:x: ${availableCategoriesRow.category_name}\n`;
-					}
-				});
+								return {
+									name: `\`${availableCategoriesRow.category_name}\``,
+									value: getCategoryEmoji(),
+									inline: true,
+								};
+							}
+						)
+					);
 				return result;
 			};
 
-			let shopMessageKeywords = async function () {
-				let result = `${localization.reply_shop_search_keywords}\n`;
-				result += selectedKeywords.join(', ');
+			const buildKeywordsEmbed = function () {
+				const result = new MessageEmbed()
+					.setColor('#7289da')
+					.setTitle(localization.reply_shop_search_keywords)
+					// .setDescription('')
+					.addFields(
+						selectedKeywords.map((selectedKeyword) => {
+							return {
+								name: `\`${selectedKeyword}\``,
+								value: '\u200b',
+								inline: true,
+							};
+						})
+					);
 				return result;
+			};
+
+			const sendCategoriesMessage = function () {
+				message
+					.reply(localization.reply_shop_search_categories_prompt)
+					.then((r) => {
+						messagesToDelete.push(r);
+					});
+
+				message.channel.send(buildCategoriesEmbed()).then((m) => {
+					messagesToDelete.push(m);
+				});
 			};
 
 			// Let user select categories to search
-			message.reply(localization.reply_shop_search_categories_prompt);
+			sendCategoriesMessage();
 
 			let awaitingUserInput = true;
 			while (awaitingUserInput) {
-				message.channel.send(await shopMessageCategories());
-
 				await message.channel
 					.awaitMessages(awaitFilter, awaitConditions)
-					.then(async (filteredCategoryName) => {
-						const categoryName = filteredCategoryName.first()
-							.content;
+					.then(async (filteredCategoryNames) => {
+						filteredCategoryNames.each((filteredMessage) => {
+							const categoryName = filteredMessage.content;
 
-						let matchedRow = availableCategoriesRows.find(
-							(availableCategoriesRow) => {
-								return (
-									availableCategoriesRow.category_name ===
-									categoryName
-								);
-							}
-						);
-
-						if (matchedRow) {
-							const selectedCategoryIndex = selectedCategories.indexOf(
-								matchedRow.id
-							);
-							if (selectedCategoryIndex > -1) {
-								selectedCategories.splice(
-									selectedCategoryIndex,
-									1
-								);
+							if (
+								categoryName === 'finish' ||
+								categoryName === 'cancel'
+							) {
+								awaitingUserInput = false;
 							} else {
-								selectedCategories.push(matchedRow.id);
+								let matchedRow = availableCategoriesRows.find(
+									(availableCategoriesRow) => {
+										return (
+											availableCategoriesRow.category_name ===
+											categoryName
+										);
+									}
+								);
+
+								if (matchedRow) {
+									const selectedCategoryIndex = selectedCategories.indexOf(
+										matchedRow.id
+									);
+									if (selectedCategoryIndex > -1) {
+										// unmark
+										selectedCategories.splice(
+											selectedCategoryIndex,
+											1
+										);
+									} else {
+										selectedCategories.push(matchedRow.id); // mark
+									}
+								}
 							}
-						} else if (
-							categoryName === 'next' ||
-							categoryName === 'cancel'
-						) {
-							awaitingUserInput = false;
+							messagesToDelete.push(filteredMessage);
+						});
+
+						// no need do redo the message if user didn't enter a message
+						if (filteredCategoryNames.size > 0) {
+							message.channel.bulkDelete(messagesToDelete);
+							messagesToDelete = new Array();
+
+							if (awaitingUserInput) {
+								sendCategoriesMessage();
+							}
 						}
 					});
 			}
+
+			const sendKeywordsMessage = function () {
+				message
+					.reply(localization.reply_shop_search_keywords_prompt)
+					.then((r) => {
+						messagesToDelete.push(r);
+					});
+
+				message.channel
+					.send(buildCategoriesEmbed())
+					.then((categoriesMsg) => {
+						messagesToDelete.push(categoriesMsg);
+					});
+
+				message.channel
+					.send(buildKeywordsEmbed())
+					.then((keywordsMsg) => {
+						messagesToDelete.push(keywordsMsg);
+					});
+			};
+
+			message.channel.bulkDelete(messagesToDelete);
+			messagesToDelete = new Array();
+			sendKeywordsMessage();
 
 			// Let user select keywords to search
-			message.reply(localization.reply_shop_search_keywords_prompt);
-
 			awaitingUserInput = true;
-			while (
-				!selectedKeywords.includes('next') &&
-				!selectedKeywords.includes('cancel')
-			) {
-				message.channel.send(
-					(await shopMessageCategories()) +
-						'\n' +
-						(await shopMessageKeywords())
-				);
-
+			while (awaitingUserInput) {
 				await message.channel
 					.awaitMessages(awaitFilter, awaitConditions)
-					.then(async (filteredKeyword) => {
-						const keyword = filteredKeyword.first().content;
+					.then(async (filteredKeywords) => {
+						filteredKeywords.each((filteredMessage) => {
+							const keyword = filteredMessage.content;
 
-						const keywordIndex = selectedKeywords.indexOf(keyword);
-						if (keywordIndex > -1) {
-							selectedKeywords.splice(keywordIndex, 1);
-						} else {
-							selectedKeywords.push(keyword);
+							if (keyword === 'finish' || keyword === 'cancel') {
+								awaitingUserInput = false;
+							} else {
+								const keywordIndex = selectedKeywords.indexOf(
+									keyword
+								);
+
+								if (keywordIndex > -1) {
+									selectedKeywords.splice(keywordIndex, 1); // delete keyword
+								} else {
+									selectedKeywords.push(keyword); // add keyword
+								}
+							}
+
+							messagesToDelete.push(filteredMessage);
+						});
+
+						// no need do redo the message if user didn't enter a message
+						if (filteredKeywords.size > 0) {
+							message.channel.bulkDelete(messagesToDelete);
+							messagesToDelete = new Array();
+
+							if (awaitingUserInput) {
+								sendKeywordsMessage();
+							}
 						}
 					});
 			}
 
-			let matchedCategoryItemRows = db
-				.prepare(
-					'SELECT * FROM items WHERE server_id = ? AND category_id IN(?)'
-				)
-				.all([message.guild.id, selectedCategories.join(',')]);
+			let allItemRows = db
+				.prepare('SELECT * FROM items WHERE server_id = ?')
+				.all([message.guild.id]);
 
 			// Create virtual table to use FTS
 			db.prepare('DROP TABLE IF EXISTS items_virtual').run();
@@ -134,7 +235,7 @@ class Shop_Search extends SubCommand {
 			).run();
 
 			// Populate the virtual table with the items that match the selected categories
-			matchedCategoryItemRows.forEach((itemRow) => {
+			allItemRows.forEach((itemRow) => {
 				db.prepare(
 					`INSERT INTO items_virtual(item_id, category_id, item_name, item_desc, item_price) VALUES(?,?,?,?,?)`
 				).run([
@@ -146,28 +247,53 @@ class Shop_Search extends SubCommand {
 				]);
 			});
 
-			// Match the items using the selected keywords
+			// Match the items using the selected keywords and categories
 			let matchedVirtualItems = db
-				.prepare(`SELECT * FROM items_virtual WHERE item_name MATCH ?`)
-				.all([selectedKeywords.join(' OR ')]);
+				.prepare(
+					`SELECT * FROM items_virtual WHERE item_name MATCH ? AND category_id MATCH ?`
+				)
+				.all([
+					selectedKeywords.join(' OR '),
+					selectedCategories.join(' OR '),
+				]);
 
 			if (matchedVirtualItems.length > 0) {
-				let foundItemsReply = `${localization.reply_shop_search_found_items}\n`;
+				const foundItemsEmbed = new MessageEmbed()
+					.setColor('#7289da')
+					.setTitle('Search result')
+					// .setDescription('')
+					.addFields(
+						matchedVirtualItems.map((matchedVirtualItem) => {
+							return {
+								name: `\`${matchedVirtualItem.item_name}\``,
+								value: matchedVirtualItem.item_price,
+								inline: true,
+							};
+						})
+					);
 
-				matchedVirtualItems.forEach((virtualItem) => {
-					foundItemsReply += `${virtualItem.item_name}\n`;
-				});
-				foundItemsReply.trimRight();
-
-				message.reply(foundItemsReply);
+				const sendSearchResults = function () {
+					message
+						.reply(localization.reply_shop_search_found_items)
+						.then((r) => {
+							messagesToDelete.push(r);
+							message.channel.send(foundItemsEmbed).then((m) => {
+								messagesToDelete.push(m);
+							});
+						});
+				};
 
 				// Let user select items to buy
 				awaitingUserInput = true;
 				while (awaitingUserInput) {
+					message.channel.bulkDelete(messagesToDelete);
+					messagesToDelete = new Array();
+
+					sendSearchResults();
 					await message.channel
-						.awaitMessages(awaitFilter, awaitConditions)
-						.then(async (filteredItemName) => {
-							const itemName = filteredItemName.first().content;
+						.awaitMessages(awaitFilter, awaitConditionsQuantity)
+						.then(async (filteredItemNames) => {
+							const itemName = filteredItemNames.first().content;
 
 							if (itemName === 'finish') {
 								awaitingUserInput = false;
@@ -179,24 +305,50 @@ class Shop_Search extends SubCommand {
 								);
 
 								if (virtualItem) {
-									db.prepare(
-										`INSERT INTO cart_items(cart_id, item_id, item_quantity) VALUES(?,?,?)
-									ON CONFLICT(cart_id, item_id) DO UPDATE SET item_quantity=item_quantity+?`
-									).run([
-										cartRow.id,
-										virtualItem.item_id,
-										1,
-										1,
-									]);
-									message.reply(
-										localization.reply_shop_search_added_item
-									);
-								} else {
-									message.reply(
-										localization.reply_shop_search_invalid_item
-									);
+									// let user select quantity
+									message
+										.reply('Enter quantity to add to cart:')
+										.then((r) => {
+											messagesToDelete.push(r);
+										});
+
+									await message.channel
+										.awaitMessages(
+											awaitFilterQuantity,
+											awaitConditionsQuantity
+										)
+										.then(async (filteredQuantity) => {
+											let quantityToAdd = parseInt(
+												filteredQuantity.first().content
+											);
+
+											if (quantityToAdd > 0) {
+												db.prepare(
+													`INSERT INTO cart_items(cart_id, item_id, item_quantity) VALUES(?,?,?)
+													ON CONFLICT(cart_id, item_id) DO UPDATE SET item_quantity=item_quantity+?`
+												).run([
+													cartRow.id,
+													virtualItem.item_id,
+													quantityToAdd,
+													quantityToAdd,
+												]);
+
+												message
+													.reply('Added!')
+													.then((r) => {
+														r.delete({
+															timeout: 3000,
+														});
+													});
+											}
+											messagesToDelete.push(
+												filteredQuantity.first()
+											);
+										});
 								}
 							}
+
+							messagesToDelete.push(filteredItemNames.first());
 						});
 				}
 			} else {
