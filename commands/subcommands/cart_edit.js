@@ -16,168 +16,181 @@ class Cart_Edit extends SubCommand {
 		if (cartRow) {
 			let awaitingUserInput = true;
 
-			// Gets all cart_items in cart
-			let getCartItems = function () {
-				return db
-					.prepare('SELECT * FROM cart_items WHERE cart_id = ?')
-					.all([cartRow.id]);
+			const currencyFormatter = new Intl.NumberFormat('en-US', {
+				style: 'currency',
+				currency: 'USD',
+			});
+
+			// Message filters
+			const awaitFilter = (m) => m.author.id === message.author.id;
+			const awaitFilterQuantity = (m) => {
+				let result = false;
+				if (m.author.id === message.author.id) {
+					if (!isNaN(parseInt(m.content))) {
+						result = true;
+					} else {
+						m.delete();
+					}
+				}
+				return result;
+			};
+
+			// Message conditions
+			const awaitConditions = {
+				idle: 1250,
+				max: 100,
+			};
+			const awaitConditionsQuantity = {
+				max: 1,
 			};
 
 			let cartItems = new Array();
-			do {
-				cartItems = getCartItems();
+			let messagesToDelete = new Array();
 
-				// Get all items that match the ids
-				let itemsRows = db
+			const sendCartMessage = function () {
+				cartItems = db
 					.prepare(
-						'SELECT * FROM items WHERE id IN(SELECT item_id FROM cart_items WHERE cart_id = ?)'
+						`SELECT cart_items.id, items.item_name, items.item_price, cart_items.item_quantity
+					 FROM items 
+					 INNER JOIN cart_items 
+					 ON cart_items.item_id=items.id
+					WHERE cart_items.cart_id=?`
 					)
-					.all(cartRow.id);
-
-				// Item ID to Cart Item map
-				let itemIDToCartItem = new Map(
-					cartItems.map((cartItem) => [cartItem.item_id, cartItem])
-				);
-
-				// Item name to Item map
-				let itemNameToItem = new Map(
-					itemsRows.map((itemRow) => [itemRow.item_name, itemRow])
-				);
-
-				const currencyFormatter = new Intl.NumberFormat('en-US', {
-					style: 'currency',
-					currency: 'USD',
-				});
-
-				let totalValue = 0.0;
+					.all([cartRow.id]);
 
 				// Construct Cart message as embed
-				const cartItemsMessage = new MessageEmbed()
-					.setColor('#7289da')
-					.setTitle(localization.reply_cart)
-					.addFields(
-						itemsRows.map((itemRow) => {
-							const quantity = itemIDToCartItem.get(itemRow.id)
-								.item_quantity;
+				const buildItemsEmbed = () => {
+					let totalValue = 0.0;
+					return new MessageEmbed()
+						.setColor('#7289da')
+						.setTitle(localization.reply_cart)
+						.addFields(
+							cartItems.map((cartItem) => {
+								// sum the total value of all items
+								totalValue +=
+									cartItem.item_quantity *
+									cartItem.item_price;
 
-							// sum the total value of all items
-							totalValue += quantity * itemRow.item_price;
-
-							return {
-								name: `\`${itemRow.item_name}\` x **${quantity}**`,
-								value: currencyFormatter.format(
-									quantity * itemRow.item_price
-								),
-								inline: true,
-							};
-						})
-					)
-					.setDescription(
-						`${
-							localization.reply_cart_total
-						} **${currencyFormatter.format(totalValue)}**`
-					);
-
-				console.log(
-					itemsRows.map((itemRow) => {
-						return {
-							name: `\`${itemRow.item_name}\` x **${
-								itemIDToCartItem.get(itemRow.id).item_quantity
-							}**`,
-							value:
-								itemIDToCartItem.get(itemRow.id).item_quantity *
-								itemRow.item_price,
-							inline: true,
-						};
-					})
-				);
-
-				// Message filters
-				const awaitFilter = (m) => m.author.id === message.author.id;
-				const awaitFilterQuantity = (m) =>
-					m.author.id === message.author.id &&
-					!isNaN(parseInt(m.content));
-
-				// Message condition
-				const awaitConditions = {
-					max: 1,
-					time: 10000,
-					errors: ['time'],
+								return {
+									name: `\`${cartItem.item_name}\` x **${cartItem.item_quantity}**`,
+									value: currencyFormatter.format(
+										cartItem.item_quantity *
+											cartItem.item_price
+									),
+									inline: true,
+								};
+							})
+						)
+						.setDescription(
+							`${
+								localization.reply_cart_total
+							} **${currencyFormatter.format(totalValue)}**`
+						);
 				};
 
 				message
 					.reply(localization.reply_cart_edit_enter_item)
-					.then(() => {
-						message.channel.send(cartItemsMessage);
+					.then((r) => {
+						messagesToDelete.push(r);
 					});
+				message.channel.send(buildItemsEmbed()).then((m) => {
+					messagesToDelete.push(m);
+				});
+			};
 
+			sendCartMessage();
+			do {
 				// let user select item
 				await message.channel
 					.awaitMessages(awaitFilter, awaitConditions)
-					.then(async (filteredItemName) => {
-						let itemName = filteredItemName.first().content.trim();
-						if (itemName === 'finish') {
-							// Finish execution of this command
-							awaitingUserInput = false;
-						} else {
-							if (itemNameToItem.has(itemName)) {
-								message.reply(
-									localization.reply_cart_enter_quantity_edit
-								);
-
-								// let user select quantity
-								await message.channel
-									.awaitMessages(
-										awaitFilterQuantity,
-										awaitConditions
-									)
-									.then(async (filteredQuantity) => {
-										let newQuantity = parseInt(
-											filteredQuantity.first().content
-										);
-
-										let cartItem = itemIDToCartItem.get(
-											itemNameToItem.get(itemName).id
-										);
-
-										if (newQuantity <= 0) {
-											db.prepare(
-												'DELETE FROM cart_items WHERE id = ?'
-											).run([cartItem.id]);
-											message.reply(
-												localization.reply_cart_deleted_item
-											);
-										} else {
-											db.prepare(
-												'UPDATE cart_items SET item_quantity = ? WHERE id = ?'
-											).run([newQuantity, cartItem.id]);
-											message.reply(
-												localization.reply_cart_edited_quantity
-											);
-										}
-									});
+					.then(async (filteredItemNames) => {
+						if (filteredItemNames.size > 0) {
+							let itemName = filteredItemNames.first().content;
+							if (itemName === 'finish') {
+								awaitingUserInput = false;
 							} else {
-								message.reply(
-									localization.no_such_item_in_cart
+								const cartItem = cartItems.find(
+									(cartItem) =>
+										cartItem.item_name === itemName
 								);
+
+								if (cartItem) {
+									message
+										.reply(
+											localization.reply_cart_enter_quantity_edit
+										)
+										.then((r) => {
+											messagesToDelete.push(r);
+										});
+
+									// let user select quantity
+									await message.channel
+										.awaitMessages(
+											awaitFilterQuantity,
+											awaitConditionsQuantity
+										)
+										.then(async (filteredQuantity) => {
+											let newQuantity = parseInt(
+												filteredQuantity.first().content
+											);
+
+											if (newQuantity <= 0) {
+												db.prepare(
+													'DELETE FROM cart_items WHERE id = ?'
+												).run([cartItem.id]);
+												message
+													.reply(
+														localization.reply_cart_deleted_item
+													)
+													.then((r) => {
+														r.delete({
+															timeout: 3500,
+														});
+													});
+											} else {
+												db.prepare(
+													'UPDATE cart_items SET item_quantity = ? WHERE id = ?'
+												).run([
+													newQuantity,
+													cartItem.id,
+												]);
+												message
+													.reply(
+														localization.reply_cart_edited_quantity
+													)
+													.then((r) => {
+														r.delete({
+															timeout: 3500,
+														});
+													});
+											}
+
+											filteredQuantity.forEach(
+												(filteredMessage) =>
+													messagesToDelete.push(
+														filteredMessage
+													)
+											);
+										});
+								}
+							}
+							filteredItemNames.forEach((filteredMessage) =>
+								messagesToDelete.push(filteredMessage)
+							);
+
+							message.channel.bulkDelete(messagesToDelete);
+							messagesToDelete = new Array();
+
+							if (awaitingUserInput) {
+								sendCartMessage();
 							}
 						}
-					})
-					.catch((error) => {
-						if (error instanceof Collection) {
-							message.reply(localization.reply_timed_out);
-							awaitingUserInput = false;
-						} else {
-							throw new Error(error);
-						}
 					});
-			} while (awaitingUserInput && cartItems.length > 0);
+			} while (awaitingUserInput);
 
-			if (cartItems.length === 0) {
-				message.reply(localization.reply_cart_empty);
-			} else {
-				message.reply(localization.finished_editing_cart);
-			}
+			message
+				.reply(localization.finished_editing_cart)
+				.then((r) => r.delete({ timeout: 3500 }));
 		} else {
 			throw new Error(
 				"Cart doesn't exist! Should be added on start of the bot!"
