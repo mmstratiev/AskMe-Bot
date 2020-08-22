@@ -19,6 +19,7 @@
 	"reply_cart_enter_quantity_edit": "Enter the new quantity for this item. Enter \"0\" to remove the item.",
 
 	"reply_checkout_creating": "Creating order...",
+	"reply_checkout_link_ready": "Your checkout link is ready!",
 	"reply_checkout_pay_now": "Pay Now",
 
 	"reply_cart_edit_enter_item": "Enter the name of the item you wish to edit in the cart. Enter `finish` to finish editing the cart.",
