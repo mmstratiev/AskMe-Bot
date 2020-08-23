@@ -107,7 +107,7 @@ class Shop_Search extends SubCommand {
 			};
 
 			sendCategoriesMessage();
-			
+
 			// Let user select categories to search
 			let awaitingUserInput = true;
 			while (awaitingUserInput) {
@@ -364,4 +364,4 @@ class Shop_Search extends SubCommand {
 	}
 }
 
-module.exports = new Shop_Search('search', 'Desc', [0], ['Usage'], []);
+module.exports = new Shop_Search('search', 'Desc', [0]);

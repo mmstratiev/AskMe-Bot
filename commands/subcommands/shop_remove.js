@@ -44,9 +44,9 @@ class Shop_Remove extends SubCommand {
 						.get([message.guild.id, filteredName.first().content]);
 
 					if (categoryRow) {
-						db.prepare(
-							'DELETE FROM categories WHERE id = ?'
-						).run([categoryRow.id]);
+						db.prepare('DELETE FROM categories WHERE id = ?').run([
+							categoryRow.id,
+						]);
 
 						message.reply('Deleted category');
 					} else {
@@ -72,10 +72,4 @@ class Shop_Remove extends SubCommand {
 	}
 }
 
-module.exports = new Shop_Remove(
-	'remove',
-	'Desc',
-	[0],
-	['Usage'],
-	['MANAGE_GUILD']
-);
+module.exports = new Shop_Remove('remove', 'Desc', [0], ['MANAGE_GUILD']);

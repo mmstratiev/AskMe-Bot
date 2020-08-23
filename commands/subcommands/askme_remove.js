@@ -107,10 +107,4 @@ class AskMe_Add extends SubCommand {
 	}
 }
 
-module.exports = new AskMe_Add(
-	'remove',
-	'Desc',
-	[0],
-	['Usage'],
-	['MANAGE_GUILD']
-);
+module.exports = new AskMe_Add('remove', 'Desc', [0], ['MANAGE_GUILD']);

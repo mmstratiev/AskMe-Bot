@@ -7,11 +7,10 @@ const {
 const { prefix } = require('../../config.json');
 
 module.exports = class SimpleCommand {
-	constructor(name, description, args = [], usage = [], permissions = []) {
+	constructor(name, description, args = [], permissions = []) {
 		this.name = name;
 		this.description = description;
 		this.args = args;
-		this.usage = usage;
 		this.permissions = permissions;
 	}
 

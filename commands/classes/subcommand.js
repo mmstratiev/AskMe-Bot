@@ -1,8 +1,8 @@
 const SimpleCommand = require('./simple_command');
 
 module.exports = class SubCommand extends SimpleCommand {
-	constructor(name, description, args = [], usage = [], permissions = []) {
-		super(name, description, args, usage, permissions);
+	constructor(name, description, args = [], permissions = []) {
+		super(name, description, args, permissions);
 	}
 
 	async execute(message, args) {

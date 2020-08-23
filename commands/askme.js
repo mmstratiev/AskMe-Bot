@@ -1,8 +1,4 @@
-const {
-	empty_command_usage,
-	main_command_usage,
-	response_unknown_question,
-} = require('../localization.json');
+const localization = require('../localization.json');
 
 const { MessageEmbed } = require('discord.js');
 const { main_command } = require('../commands.json');
@@ -138,6 +134,5 @@ class AskMeCommand extends Command {
 module.exports = new AskMeCommand(
 	main_command,
 	'Answers the asked questions.',
-	[0, 1],
-	[empty_command_usage, main_command_usage]
+	[0, 1]
 );

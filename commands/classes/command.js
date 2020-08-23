@@ -2,8 +2,8 @@ const fs = require('fs');
 const SimpleCommand = require('./simple_command');
 
 module.exports = class Command extends SimpleCommand {
-	constructor(name, description, args = [], usage = [], permissions = []) {
-		super(name, description, args, usage, permissions);
+	constructor(name, description, args = [], permissions = []) {
+		super(name, description, args, permissions);
 	}
 
 	// Avoid overriding, override execute_internal instead
@@ -14,16 +14,12 @@ module.exports = class Command extends SimpleCommand {
 				let subCommands = this.getSubCommands();
 				let subCommand = subCommands.get(args[0]);
 
-				// try {
-					if (subCommand) {
-						let subCommandArgs = args.slice(1);
-						await subCommand.execute(message, subCommandArgs);
-					} else {
-						await this.execute_internal(message, args);
-					}
-				// } catch (error) {
-				// 	throw new Error(error);
-				// }
+				if (subCommand) {
+					let subCommandArgs = args.slice(1);
+					await subCommand.execute(message, subCommandArgs);
+				} else {
+					await this.execute_internal(message, args);
+				}
 			} else {
 				message.reply(this.getInvalidArgumentsReply());
 			}

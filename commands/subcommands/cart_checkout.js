@@ -115,4 +115,4 @@ class Cart_Checkout extends SubCommand {
 	}
 }
 
-module.exports = new Cart_Checkout('checkout', 'Desc', [0], ['Usage'], []);
+module.exports = new Cart_Checkout('checkout', 'Desc', [0], []);

@@ -8,9 +8,4 @@ class ShopCommand extends Command {
 	}
 }
 
-module.exports = new ShopCommand(
-	shop_command,
-	'Open shop',
-	[0],
-	[empty_command_usage]
-);
+module.exports = new ShopCommand(shop_command, 'Open shop', [0]);

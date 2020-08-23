@@ -224,7 +224,10 @@ client.on('message', (message) => {
 			);
 
 			message.reply(
-				`Howdy! I'm here to help - use \`${prefix}${help_command}\` for detailed information on how to use me!`
+				localization.response_mentioned_self.replace(
+					'^1',
+					`\`${prefix}${help_command}\``
+				)
 			);
 		}
 	}

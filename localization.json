@@ -1,14 +1,16 @@
 {
+	"response_mentioned_self": "Howdy! I'm here to help - use ^1 for a list of commands you can use!",
+	
 	"response_command_failed": "An error occurred while executing the command! Please, contact the server admins **immediately**!",
 	"response_no_arguments": "You didn't provide any arguments!",
 	"response_invalid_argument_count": "You provided an invalid number of arguments!",
 	"response_proper_command": "Proper command form is:",
-	"response_mentioned_self": "You can use ^1 to ask me any of the following questions:",
 	"response_missing_permissions": "You don't have permissions to run this command!",
 
-	"response_unknown_question": "Sorry, I don't know the answer to that. Try tagging me for a list of questions!",
+	"reply_help_title": "AskMe Help",
+	"reply_help_description": "**Based on your permissions, you can use any of the following commands:**",
 
-	"reply_timed_out": "Timed out, I don't have all day.",
+	"response_unknown_question": "Sorry, I don't know the answer to that. Try tagging me for a list of questions!",
 
 	"finished_editing_cart": "Finished editing cart!",
 	"no_such_item_in_cart": "Can't find item in shopping cart!",
@@ -33,9 +35,5 @@
 	"reply_shop_search_found_items": "I found these items matching your search criteria. What would you like to buy?",
 	"reply_shop_search_added_item": "Added item in shopping cart!",
 	"reply_shop_search_invalid_item": "Item not found in search results!",
-	"reply_shop_search_no_items": "I couldn't find any items in the shop that match your search criteria!",
-
-	"empty_command_usage": "",
-	"main_command_usage": "<questions>",
-	"help_command_usage": "<command name>"
+	"reply_shop_search_no_items": "I couldn't find any items in the shop that match your search criteria!"
 }

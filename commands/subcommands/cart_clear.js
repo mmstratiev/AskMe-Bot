@@ -27,4 +27,4 @@ class Cart_Clear extends SubCommand {
 	}
 }
 
-module.exports = new Cart_Clear('clear', 'Desc', [0], ['Usage'], []);
+module.exports = new Cart_Clear('clear', 'Desc', [0], []);

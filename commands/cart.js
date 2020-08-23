@@ -12,6 +12,4 @@ class CartCommand extends Command {
 	}
 }
 
-module.exports = new CartCommand(cart_command, 'Cart'[0], [
-	empty_command_usage,
-]);
+module.exports = new CartCommand(cart_command, 'Cart', [0, 1]);
