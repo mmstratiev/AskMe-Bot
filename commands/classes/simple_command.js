@@ -1,5 +1,5 @@
 const {
-	response_missing_permissions,
+	reply_missing_permissions,
 	response_invalid_argument_count,
 	response_proper_command,
 } = require('../../localization.json');
@@ -48,6 +48,6 @@ module.exports = class SimpleCommand {
 	}
 
 	getInvalidPermissionsReply() {
-		return response_missing_permissions;
+		return reply_missing_permissions;
 	}
 };

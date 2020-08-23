@@ -1,6 +1,7 @@
 const utilities = require('../../utilities');
 const localization = require('../../localization.json');
-const { Collection, MessageEmbed } = require('discord.js');
+
+const { MessageEmbed } = require('discord.js');
 
 const SubCommand = require('../classes/subcommand');
 class Cart_Edit extends SubCommand {
@@ -189,7 +190,7 @@ class Cart_Edit extends SubCommand {
 			} while (awaitingUserInput);
 
 			message
-				.reply(localization.finished_editing_cart)
+				.reply(localization.reply_cart_finished_editing)
 				.then((r) => r.delete({ timeout: 3500 }));
 		} else {
 			throw new Error(

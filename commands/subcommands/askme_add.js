@@ -1,4 +1,5 @@
 const utilities = require('../../utilities');
+const localization = require('../../localization.json');
 
 const SubCommand = require('../classes/subcommand');
 class AskMe_Add extends SubCommand {
@@ -24,9 +25,7 @@ class AskMe_Add extends SubCommand {
 
 		const sendQuestionMessage = function () {
 			message
-				.reply(
-					'Enter the question you would like to add. Enter `finish` to finish adding questions.'
-				)
+				.reply(localization.reply_askme_add_enter_question)
 				.then((m) => messagesToDelete.push(m));
 		};
 
@@ -41,7 +40,9 @@ class AskMe_Add extends SubCommand {
 							awaitingUserInput = false;
 						} else {
 							message
-								.reply('Enter answer for this question')
+								.reply(
+									localization.reply_askme_add_enter_asnwer
+								)
 								.then((r) => messagesToDelete.push(r));
 
 							await message.channel
@@ -68,13 +69,17 @@ class AskMe_Add extends SubCommand {
 
 									if (questionRow) {
 										message
-											.reply('Question updated!')
+											.reply(
+												localization.reply_askme_add_added
+											)
 											.then((r) =>
 												r.delete({ timeout: 3500 })
 											);
 									} else {
 										message
-											.reply('Question added!')
+											.reply(
+												localization.reply_askme_add_updated
+											)
 											.then((r) =>
 												r.delete({ timeout: 3500 })
 											);
@@ -101,7 +106,7 @@ class AskMe_Add extends SubCommand {
 		}
 
 		message
-			.reply('Finished adding questions!')
+			.reply(localization.reply_askme_add_finished)
 			.then((r) => r.delete({ timeout: 4000 }));
 
 		db.close();

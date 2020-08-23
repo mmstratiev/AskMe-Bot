@@ -1,4 +1,6 @@
 const utilities = require('../../utilities');
+const localization = require('../../localization.json');
+
 const { MessageEmbed } = require('discord.js');
 
 const SubCommand = require('../classes/subcommand');
@@ -58,9 +60,7 @@ class Shop_Add extends SubCommand {
 
 			// Choose Category
 			message
-				.reply(
-					'Enter category name for item. `finish` to stop adding items.'
-				)
+				.reply(localization.reply_shop_add_enter_item_category)
 				.then((r) => {
 					r.edit(r.content, buildCategoriesEmbed());
 					messagesToDelete.push(r);
@@ -100,7 +100,7 @@ class Shop_Add extends SubCommand {
 			if (awaitingUserInput) {
 				// Item name
 				message.channel
-					.send('Enter item name')
+					.send(localization.reply_shop_add_enter_item_name)
 					.then((r) => messagesToDelete.push(r));
 
 				await message.channel
@@ -121,7 +121,7 @@ class Shop_Add extends SubCommand {
 			if (awaitingUserInput) {
 				// Item description
 				message.channel
-					.send('Enter item description')
+					.send(localization.reply_shop_add_enter_item_description)
 					.then((r) => messagesToDelete.push(r));
 
 				await message.channel
@@ -143,7 +143,7 @@ class Shop_Add extends SubCommand {
 			if (awaitingUserInput) {
 				// Item price
 				message.channel
-					.send('Enter item price')
+					.send(localization.reply_shop_add_enter_item_price)
 					.then((r) => messagesToDelete.push(r));
 
 				await message.channel
@@ -186,11 +186,11 @@ class Shop_Add extends SubCommand {
 
 				if (itemRow) {
 					message
-						.reply('Item updated')
+						.reply(localization.reply_shop_add_item_updated)
 						.then((r) => r.delete({ timeout: 3500 }));
 				} else {
 					message
-						.reply('Item added')
+						.reply(localization.reply_shop_add_item_added)
 						.then((r) => r.delete({ timeout: 3500 }));
 				}
 			}
@@ -199,7 +199,7 @@ class Shop_Add extends SubCommand {
 			messagesToDelete = new Array();
 		}
 
-		message.reply('Finished adding items!').then((r) => {
+		message.reply(localization.reply_shop_add_item_finished).then((r) => {
 			r.delete({ timeout: 4000 });
 		});
 		db.close();
@@ -231,7 +231,7 @@ class Shop_Add extends SubCommand {
 			let newCategoryDescription = '';
 
 			message
-				.reply('Enter category name')
+				.reply(localization.reply_shop_add_enter_category_name)
 				.then((r) => messagesToDelete.push(r));
 
 			await message.channel
@@ -250,7 +250,9 @@ class Shop_Add extends SubCommand {
 
 			if (awaitingUserInput) {
 				message
-					.reply('Enter category description')
+					.reply(
+						localization.reply_shop_add_enter_category_description
+					)
 					.then((r) => messagesToDelete.push(r));
 				await message.channel
 					.awaitMessages(awaitFilter, awaitConditions)
@@ -287,11 +289,11 @@ class Shop_Add extends SubCommand {
 
 				if (categoryRow) {
 					message
-						.reply('Category updated!')
+						.reply(localization.reply_shop_add_category_updated)
 						.then((r) => r.delete({ timeout: 3500 }));
 				} else {
 					message
-						.reply('Category added!')
+						.reply(localization.reply_shop_add_category_added)
 						.then((r) => r.delete({ timeout: 3500 }));
 				}
 			}
@@ -300,9 +302,11 @@ class Shop_Add extends SubCommand {
 			messagesToDelete = new Array();
 		}
 
-		message.reply('Finished adding categories!').then((r) => {
-			r.delete({ timeout: 4000 });
-		});
+		message
+			.reply(localization.reply_shop_add_category_finished)
+			.then((r) => {
+				r.delete({ timeout: 4000 });
+			});
 
 		db.close();
 	}
@@ -318,9 +322,13 @@ class Shop_Add extends SubCommand {
 		let messagesToDelete = new Array();
 
 		const sendMessage = () => {
-			message.reply('1: Item\n2: Category').then((r) => {
-				messagesToDelete.push(r);
-			});
+			message
+				.reply(
+					`${localization.reply_shop_add_message}\n1: ${localization.reply_shop_add_item}\n2: ${localization.reply_shop_add_category}`
+				)
+				.then((r) => {
+					messagesToDelete.push(r);
+				});
 		};
 
 		// Choose what to add
@@ -352,6 +360,12 @@ class Shop_Add extends SubCommand {
 					}
 				});
 		}
+
+		message
+			.reply(localization.reply_shop_add_finished)
+			.then((r) => {
+				r.delete({ timeout: 4000 });
+			});
 	}
 }
 

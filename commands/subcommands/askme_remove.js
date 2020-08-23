@@ -1,4 +1,5 @@
 const utilities = require('../../utilities');
+const localization = require('../../localization.json');
 const { MessageEmbed } = require('discord.js');
 
 const SubCommand = require('../classes/subcommand');
@@ -39,9 +40,7 @@ class AskMe_Add extends SubCommand {
 			let messageIndex = 1;
 			const questionsEmbed = new MessageEmbed()
 				.setColor('#000000')
-				.setTitle(
-					'Enter the number of the question you want to delete. Enter `finish` to finish deleting questions.'
-				)
+				.setTitle(localization.reply_askme_remove_enter_question)
 				.setDescription(
 					questionRows
 						.map(
@@ -83,7 +82,9 @@ class AskMe_Add extends SubCommand {
 								).run([questionRow.id]);
 
 								message
-									.reply('Question deleted!')
+									.reply(
+										localization.reply_askme_remove_removed
+									)
 									.then((r) => r.delete({ timeout: 3500 }));
 							}
 						}
@@ -102,7 +103,7 @@ class AskMe_Add extends SubCommand {
 		}
 
 		message
-			.reply('Finished deleting questions!')
+			.reply(localization.reply_askme_remove_finished)
 			.then((r) => r.delete({ timeout: 4000 }));
 	}
 }

@@ -214,7 +214,7 @@ client.on('message', (message) => {
 				const command = client.commands.get(commandName);
 				command.execute(message, args).catch((error) => {
 					console.error(error);
-					message.reply(localization.response_command_failed);
+					message.reply(localization.reply_command_failed);
 				});
 			}
 		} else if (message.mentions.users.has(client.user.id)) {

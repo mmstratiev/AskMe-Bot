@@ -1,6 +1,7 @@
 const utilities = require('../../utilities');
 const createOrder = require('../../paypal/orders/createOrder');
 const localization = require('../../localization.json');
+
 const { MessageEmbed } = require('discord.js');
 
 const SubCommand = require('../classes/subcommand');
