@@ -84,12 +84,14 @@ class Cart_Checkout extends SubCommand {
 												.addFields(
 													cartItems.map(
 														(cartItem) => {
+															const formattedPrice = currencyFormatter.format(
+																cartItem.item_quantity *
+																	cartItem.item_price
+															);
+
 															return {
 																name: `\`${cartItem.item_name}\` x **${cartItem.item_quantity}**`,
-																value: currencyFormatter.format(
-																	cartItem.item_quantity *
-																		cartItem.item_price
-																),
+																value: `\`\`\`diff\n+ ${formattedPrice} \`\`\``,
 																inline: true,
 															};
 														}

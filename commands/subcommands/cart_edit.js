@@ -64,7 +64,7 @@ class Cart_Edit extends SubCommand {
 					let totalValue = 0.0;
 					return new MessageEmbed()
 						.setColor('#7289da')
-						.setTitle(localization.reply_cart)
+						.setTitle(localization.reply_cart_edit_enter_item)
 						.addFields(
 							cartItems.map((cartItem) => {
 								// sum the total value of all items
@@ -72,12 +72,13 @@ class Cart_Edit extends SubCommand {
 									cartItem.item_quantity *
 									cartItem.item_price;
 
+								const formattedPrice = currencyFormatter.format(
+									cartItem.item_quantity * cartItem.item_price
+								);
+
 								return {
 									name: `\`${cartItem.item_name}\` x **${cartItem.item_quantity}**`,
-									value: currencyFormatter.format(
-										cartItem.item_quantity *
-											cartItem.item_price
-									),
+									value: `\`\`\`diff\n+ ${formattedPrice} \`\`\``,
 									inline: true,
 								};
 							})
@@ -89,13 +90,8 @@ class Cart_Edit extends SubCommand {
 						);
 				};
 
-				message
-					.reply(localization.reply_cart_edit_enter_item)
-					.then((r) => {
-						messagesToDelete.push(r);
-					});
-				message.channel.send(buildItemsEmbed()).then((m) => {
-					messagesToDelete.push(m);
+				message.reply(buildItemsEmbed()).then((r) => {
+					messagesToDelete.push(r);
 				});
 			};
 
