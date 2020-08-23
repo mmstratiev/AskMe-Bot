@@ -42,8 +42,7 @@ class Shop_Add extends SubCommand {
 			const buildCategoriesEmbed = function () {
 				const result = new MessageEmbed()
 					.setColor('#7289da')
-					.setTitle('Categories')
-					// .setDescription('')
+					.setTitle(localization.reply_shop_add_enter_item_category)
 					.addFields(
 						availableCategoriesRows.map(
 							(availableCategoriesRow) => {
@@ -59,12 +58,9 @@ class Shop_Add extends SubCommand {
 			};
 
 			// Choose Category
-			message
-				.reply(localization.reply_shop_add_enter_item_category)
-				.then((r) => {
-					r.edit(r.content, buildCategoriesEmbed());
-					messagesToDelete.push(r);
-				});
+			message.reply(buildCategoriesEmbed()).then((r) => {
+				messagesToDelete.push(r);
+			});
 
 			while (!newItemCategoryId && awaitingUserInput) {
 				await message.channel
@@ -322,13 +318,16 @@ class Shop_Add extends SubCommand {
 		let messagesToDelete = new Array();
 
 		const sendMessage = () => {
-			message
-				.reply(
-					`${localization.reply_shop_add_message}\n1: ${localization.reply_shop_add_item}\n2: ${localization.reply_shop_add_category}`
-				)
-				.then((r) => {
-					messagesToDelete.push(r);
-				});
+			const embed = new MessageEmbed()
+				.setColor('#000000')
+				.setTitle(localization.reply_shop_add_message)
+				.setDescription(
+					`\`\`\`md\n1. ${localization.reply_shop_add_item}\n2. ${localization.reply_shop_add_category}\`\`\``
+				);
+
+			message.reply(embed).then((r) => {
+				messagesToDelete.push(r);
+			});
 		};
 
 		// Choose what to add
@@ -361,11 +360,9 @@ class Shop_Add extends SubCommand {
 				});
 		}
 
-		message
-			.reply(localization.reply_shop_add_finished)
-			.then((r) => {
-				r.delete({ timeout: 4000 });
-			});
+		message.reply(localization.reply_shop_add_finished).then((r) => {
+			r.delete({ timeout: 4000 });
+		});
 	}
 }
 

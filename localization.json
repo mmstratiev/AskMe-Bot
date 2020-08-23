@@ -40,6 +40,14 @@
 
 	"reply_shop_remove_message": "Enter the number of the thing you want to remove. Enter 'finish' to finish removing.",
 	"reply_shop_remove_finished": "Finished adding!",
+	"reply_shop_remove_item_name": "Enter the name of the item you want to remove. Enter 'finish' to finish removing items.",
+	"reply_shop_remove_item_invalid": "Invalid item!",
+	"reply_shop_remove_item_removed": "Item removed!",
+	"reply_shop_remove_item_finished": "Finished removing items!",
+	"reply_shop_remove_category_name": "Enter the name of the category you want to remove. Enter 'finish' to finish removing categories.",
+	"reply_shop_remove_category_invalid": "Invalid category!",
+	"reply_shop_remove_category_removed": "Category removed!",
+	"reply_shop_remove_category_finished": "Finished removing categories!",
 
 	"reply_cart": "Cart",
 	"reply_cart_total": "Total:",

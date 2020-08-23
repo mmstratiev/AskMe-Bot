@@ -262,8 +262,7 @@ class Shop_Search extends SubCommand {
 			if (matchedVirtualItems.length > 0) {
 				const foundItemsEmbed = new MessageEmbed()
 					.setColor('#7289da')
-					.setTitle('Search result')
-					// .setDescription('')
+					.setTitle(localization.reply_shop_search_found_items)
 					.addFields(
 						matchedVirtualItems.map((matchedVirtualItem) => {
 							return {
@@ -275,14 +274,9 @@ class Shop_Search extends SubCommand {
 					);
 
 				const sendSearchResults = function () {
-					message
-						.reply(localization.reply_shop_search_found_items)
-						.then((r) => {
-							messagesToDelete.push(r);
-							message.channel.send(foundItemsEmbed).then((m) => {
-								messagesToDelete.push(m);
-							});
-						});
+					message.reply(foundItemsEmbed).then((r) => {
+						messagesToDelete.push(r);
+					});
 				};
 
 				// Let user select items to buy
