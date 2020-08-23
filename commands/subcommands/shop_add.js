@@ -1,143 +1,357 @@
 const utilities = require('../../utilities');
+const { MessageEmbed } = require('discord.js');
 
 const SubCommand = require('../classes/subcommand');
 class Shop_Add extends SubCommand {
-	async execute_internal(message, args) {
+	async add_item(message) {
 		let db = utilities.openDatabase();
-		const awaitFilter = (m) => m.author.id === message.author.id;
-		const awaitFilterPrice = (m) =>
-			m.author.id === message.author.id && Boolean(parseFloat(m.content));
 
+		let awaitingUserInput = true;
+		const awaitFilter = (m) => m.author.id === message.author.id;
+		const awaitFilterPrice = (m) => {
+			let result = false;
+			if (m.author.id === message.author.id) {
+				if (!isNaN(parseFloat(m.content)) || m.content === 'finish') {
+					result = true;
+				} else {
+					m.delete();
+				}
+			}
+			return result;
+		};
 		const awaitConditions = {
 			max: 1,
-			time: 10000,
-			errors: ['time'],
 		};
+		let messagesToDelete = new Array();
 
-		let addItem = async function () {
-			message.channel.send('Enter category name for item');
-			let categoryRow = undefined;
-			while (!categoryRow) {
+		while (awaitingUserInput) {
+			let newItemCategoryId = undefined;
+			let newItemName = '';
+			let newItemDescription = '';
+			let newItemPrice = '';
+
+			// Get all categories in server
+			const availableCategoriesRows = db
+				.prepare(
+					'SELECT * FROM categories WHERE server_id = ? ORDER BY category_name'
+				)
+				.all([message.guild.id]);
+
+			const buildCategoriesEmbed = function () {
+				const result = new MessageEmbed()
+					.setColor('#7289da')
+					.setTitle('Categories')
+					// .setDescription('')
+					.addFields(
+						availableCategoriesRows.map(
+							(availableCategoriesRow) => {
+								return {
+									name: `\`${availableCategoriesRow.category_name}\``,
+									value: `\`\`\`${availableCategoriesRow.category_description}\`\`\``,
+									inline: true,
+								};
+							}
+						)
+					);
+				return result;
+			};
+
+			// Choose Category
+			message
+				.reply(
+					'Enter category name for item. `finish` to stop adding items.'
+				)
+				.then((r) => {
+					r.edit(r.content, buildCategoriesEmbed());
+					messagesToDelete.push(r);
+				});
+
+			while (!newItemCategoryId && awaitingUserInput) {
 				await message.channel
 					.awaitMessages(awaitFilter, awaitConditions)
 					.then(async (filteredCategoryName) => {
-						categoryRow = db
-							.prepare(
-								'SELECT * FROM categories WHERE server_id = ? AND category_name = ?'
-							)
-							.get([
-								message.guild.id,
-								filteredCategoryName.first().content,
-							]);
+						const categoryName = filteredCategoryName.first()
+							.content;
+
+						if (categoryName === 'finish') {
+							awaitingUserInput = false;
+						} else {
+							const categoryRow = availableCategoriesRows.find(
+								(availableCategoryRow) =>
+									availableCategoryRow.category_name ===
+									categoryName
+							);
+
+							if (categoryRow) {
+								newItemCategoryId = categoryRow.id;
+							} else {
+								message
+									.reply('Invalid category!')
+									.then((r) => r.delete({ timeout: 3500 }));
+							}
+						}
+
+						filteredCategoryName.forEach((filteredMessage) =>
+							messagesToDelete.push(filteredMessage)
+						);
 					});
-				if (!categoryRow) {
-					message.channel.send("Category doesn't exist!");
+			}
+
+			if (awaitingUserInput) {
+				// Item name
+				message.channel
+					.send('Enter item name')
+					.then((r) => messagesToDelete.push(r));
+
+				await message.channel
+					.awaitMessages(awaitFilter, awaitConditions)
+					.then(async (filteredName) => {
+						if (filteredName.first().content === 'finish') {
+							awaitingUserInput = false;
+						} else {
+							newItemName = filteredName.first().content;
+						}
+
+						filteredName.forEach((filteredMessage) =>
+							messagesToDelete.push(filteredMessage)
+						);
+					});
+			}
+
+			if (awaitingUserInput) {
+				// Item description
+				message.channel
+					.send('Enter item description')
+					.then((r) => messagesToDelete.push(r));
+
+				await message.channel
+					.awaitMessages(awaitFilter, awaitConditions)
+					.then(async (filteredDescription) => {
+						if (filteredDescription.first().content === 'finish') {
+							awaitingUserInput = false;
+						} else {
+							newItemDescription = filteredDescription.first()
+								.content;
+						}
+
+						filteredDescription.forEach((filteredMessage) =>
+							messagesToDelete.push(filteredMessage)
+						);
+					});
+			}
+
+			if (awaitingUserInput) {
+				// Item price
+				message.channel
+					.send('Enter item price')
+					.then((r) => messagesToDelete.push(r));
+
+				await message.channel
+					.awaitMessages(awaitFilterPrice, awaitConditions)
+					.then(async (filteredPrice) => {
+						if (filteredPrice.first().content === 'finish') {
+							awaitingUserInput = false;
+						} else {
+							newItemPrice = parseFloat(
+								filteredPrice.first().content
+							);
+						}
+
+						filteredPrice.forEach((filteredMessage) =>
+							messagesToDelete.push(filteredMessage)
+						);
+					});
+			}
+
+			if (awaitingUserInput) {
+				let itemRow = db
+					.prepare(
+						'SELECT * FROM items WHERE server_id = ? AND item_name = ?'
+					)
+					.get([message.guild.id, newItemName]);
+
+				db.prepare(
+					`INSERT INTO items(server_id, category_id, item_name, item_description, item_price) VALUES(?,?,?,?,?)
+					ON CONFLICT(server_id, item_name) DO UPDATE SET category_id=?, item_description=?, item_price=?`
+				).run([
+					message.guild.id,
+					newItemCategoryId,
+					newItemName,
+					newItemDescription,
+					newItemPrice,
+					newItemCategoryId,
+					newItemDescription,
+					newItemPrice,
+				]);
+
+				if (itemRow) {
+					message
+						.reply('Item updated')
+						.then((r) => r.delete({ timeout: 3500 }));
+				} else {
+					message
+						.reply('Item added')
+						.then((r) => r.delete({ timeout: 3500 }));
 				}
 			}
 
-			message.channel.send('Enter item name');
-			await message.channel
-				.awaitMessages(awaitFilter, awaitConditions)
-				.then(async (filteredName) => {
-					message.channel.send('Enter item description');
-					await message.channel
-						.awaitMessages(awaitFilter, awaitConditions)
-						.then(async (filteredDesc) => {
-							await message.channel.send('Enter item price');
-							await message.channel
-								.awaitMessages(
-									awaitFilterPrice,
-									awaitConditions
-								)
-								.then(async (filteredPrice) => {
-									let itemRow = db
-										.prepare(
-											'SELECT * FROM items WHERE server_id = ? AND item_name = ?'
-										)
-										.get([
-											message.guild.id,
-											filteredName.first().content,
-										]);
+			message.channel.bulkDelete(messagesToDelete);
+			messagesToDelete = new Array();
+		}
 
-									if (itemRow) {
-										message.reply(
-											'That item already exists!'
-										);
-									} else {
-										db.prepare(
-											'INSERT INTO items(server_id, category_id, item_name, item_description, item_price) VALUES(?,?,?,?,?)'
-										).run([
-											message.guild.id,
-											categoryRow.id,
-											filteredName.first().content,
-											filteredDesc.first().content,
-											parseFloat(
-												filteredPrice.first().content
-											),
-										]);
-										message.reply('Added item');
-									}
-								});
-						});
-				});
-			// .catch((error) => {
-			// 	if (error instanceof Collection) {
-			// 		// awaitMessages timed out
-			// 		message.reply('Timed out');
-			// 	} else {
-			// 		throw new Error(error);
-			// 	}
-			// });
+		message.reply('Finished adding items!').then((r) => {
+			r.delete({ timeout: 4000 });
+		});
+		db.close();
+	}
+
+	async add_category(message) {
+		let db = utilities.openDatabase();
+		let awaitingUserInput = true;
+		let messagesToDelete = new Array();
+
+		const awaitFilter = (m) => m.author.id === message.author.id;
+		const awaitFilterPrice = (m) => {
+			let result = false;
+			if (m.author.id === message.author.id) {
+				if (!isNaN(parseFloat(m.content)) || m.content === 'finish') {
+					result = true;
+				} else {
+					m.delete();
+				}
+			}
+			return result;
+		};
+		const awaitConditions = {
+			max: 1,
 		};
 
-		let addCategory = async function () {
-			message.channel.send('Enter category name');
+		while (awaitingUserInput) {
+			let newCategoryName = '';
+			let newCategoryDescription = '';
+
+			message
+				.reply('Enter category name')
+				.then((r) => messagesToDelete.push(r));
+
 			await message.channel
 				.awaitMessages(awaitFilter, awaitConditions)
 				.then(async (filteredCategoryName) => {
-					message.channel.send('Enter category description');
-					await message.channel
-						.awaitMessages(awaitFilter, awaitConditions)
-						.then(async (filteredCategoryDesc) => {
-							let categoryRow = db
-								.prepare(
-									'SELECT * FROM categories WHERE server_id = ? AND category_name = ?'
-								)
-								.get([
-									message.guild.id,
-									filteredCategoryName.first().content,
-								]);
+					if (filteredCategoryName.first().content === 'finish') {
+						awaitingUserInput = false;
+					} else {
+						newCategoryName = filteredCategoryName.first().content;
+					}
 
-							if (categoryRow) {
-								message.reply('That category already exists!');
-							} else {
-								db.prepare(
-									'INSERT INTO categories(server_id, category_name, category_description) VALUES(?,?,?)'
-								).run([
-									message.guild.id,
-									filteredCategoryName.first().content,
-									filteredCategoryDesc.first().content,
-								]);
-								message.reply('Added category');
-							}
-						});
+					filteredCategoryName.forEach((filteredMessage) =>
+						messagesToDelete.push(filteredMessage)
+					);
 				});
+
+			if (awaitingUserInput) {
+				message
+					.reply('Enter category description')
+					.then((r) => messagesToDelete.push(r));
+				await message.channel
+					.awaitMessages(awaitFilter, awaitConditions)
+					.then(async (filteredCategoryDesc) => {
+						if (filteredCategoryDesc.first().content === 'finish') {
+							awaitingUserInput = false;
+						} else {
+							newCategoryDescription = filteredCategoryDesc.first()
+								.content;
+						}
+
+						filteredCategoryDesc.forEach((filteredMessage) =>
+							messagesToDelete.push(filteredMessage)
+						);
+					});
+			}
+
+			if (awaitingUserInput) {
+				let categoryRow = db
+					.prepare(
+						'SELECT * FROM categories WHERE server_id = ? AND category_name = ?'
+					)
+					.get([message.guild.id, newCategoryName]);
+
+				db.prepare(
+					`INSERT INTO categories(server_id, category_name, category_description) VALUES(?,?,?)
+					ON CONFLICT(server_id, category_name) DO UPDATE SET category_description=?`
+				).run([
+					message.guild.id,
+					newCategoryName,
+					newCategoryDescription,
+					newCategoryDescription,
+				]);
+
+				if (categoryRow) {
+					message
+						.reply('Category updated!')
+						.then((r) => r.delete({ timeout: 3500 }));
+				} else {
+					message
+						.reply('Category added!')
+						.then((r) => r.delete({ timeout: 3500 }));
+				}
+			}
+
+			message.channel.bulkDelete(messagesToDelete);
+			messagesToDelete = new Array();
+		}
+
+		message.reply('Finished adding categories!').then((r) => {
+			r.delete({ timeout: 4000 });
+		});
+
+		db.close();
+	}
+
+	async execute_internal(message, args) {
+		let awaitingUserInput = true;
+		const awaitFilter = (m) => m.author.id === message.author.id;
+		const awaitConditions = {
+			max: 100,
+			idle: 1250,
 		};
 
-		message.channel.send('1: Item, 2: Category');
-		await message.channel
-			.awaitMessages(awaitFilter, awaitConditions)
-			.then(async (filteredAddType) => {
-				if (filteredAddType.first().content === '1') {
-					addItem().catch((error) => {
-						console.log('Error adding item: ' + error);
-					});
-				} else {
-					addCategory().catch((error) => {
-						console.log('Error adding category: ' + error);
-					});
-				}
+		let messagesToDelete = new Array();
+
+		const sendMessage = () => {
+			message.reply('1: Item\n2: Category').then((r) => {
+				messagesToDelete.push(r);
 			});
+		};
+
+		// Choose what to add
+		sendMessage();
+		while (awaitingUserInput) {
+			await message.channel
+				.awaitMessages(awaitFilter, awaitConditions)
+				.then(async (filteredAddType) => {
+					if (filteredAddType.size > 0) {
+						const optionIndex = filteredAddType.first().content;
+						if (optionIndex === 'finish') {
+							awaitingUserInput = false;
+						} else if (optionIndex === '1') {
+							await this.add_item(message);
+						} else if (optionIndex === '2') {
+							await this.add_category(message);
+						}
+
+						filteredAddType.forEach((filteredMessage) => {
+							messagesToDelete.push(filteredMessage);
+						});
+
+						message.channel.bulkDelete(messagesToDelete);
+						messagesToDelete = new Array();
+
+						if (awaitingUserInput) {
+							sendMessage();
+						}
+					}
+				});
+		}
 	}
 }
 

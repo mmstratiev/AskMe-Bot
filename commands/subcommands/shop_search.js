@@ -29,7 +29,7 @@ class Shop_Search extends SubCommand {
 
 			const awaitConditions = {
 				max: 100,
-				idle: 1500,
+				idle: 1250,
 			};
 			const awaitConditionsQuantity = {
 				max: 1,
@@ -106,9 +106,9 @@ class Shop_Search extends SubCommand {
 				});
 			};
 
-			// Let user select categories to search
 			sendCategoriesMessage();
-
+			
+			// Let user select categories to search
 			let awaitingUserInput = true;
 			while (awaitingUserInput) {
 				await message.channel
@@ -253,7 +253,9 @@ class Shop_Search extends SubCommand {
 					`SELECT * FROM items_virtual WHERE item_name MATCH ? AND category_id MATCH ?`
 				)
 				.all([
-					selectedKeywords.join(' OR '),
+					selectedKeywords
+						.map((selectedKeyword) => `${selectedKeyword}*`)
+						.join(' OR '),
 					selectedCategories.join(' OR '),
 				]);
 
