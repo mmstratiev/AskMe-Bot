@@ -372,4 +372,8 @@ class Shop_Search extends SubCommand {
 	}
 }
 
-module.exports = new Shop_Search('search', 'Desc', [0]);
+module.exports = new Shop_Search(
+	'search',
+	localization.shop_search_description,
+	[0]
+);

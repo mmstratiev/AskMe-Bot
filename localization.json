@@ -71,5 +71,18 @@
 	"reply_shop_search_added_item": "Added item in shopping cart!",
 	"reply_shop_search_invalid_item": "Item not found in search results!",
 	"reply_shop_search_no_items": "I couldn't find any items in the shop that match your search criteria!",
-	"reply_shop_search_finished": "Finished buying items!"
+	"reply_shop_search_finished": "Finished buying items!",
+
+	"help_description": "Displays help about all available commands or specific command.",
+	"askme_description": "Displays a list of FAQ and let's you choose which one to answer.",
+	"askme_add_description": "Add questions and answers in the question database.",
+	"askme_remove_description": "Removes questions from the question database.",
+	"cart_description": "Used for actions related to your shopping cart. __Only usable with subcommands.__",
+	"cart_checkout_description": "Generates a paypal payment link for the items in your shopping cart.",
+	"cart_clear_description": "Clears your shopping cart.",
+	"cart_edit_description": "Lets you edit the items in your shopping cart.",
+	"shop_description": "Used for actions related to the server shop. __Only usable with subcommands.__",
+	"shop_add_description": "Add items in the shop database.",
+	"shop_remove_description": "Removes items from the shop database.",
+	"shop_search_description": "Search for items to buy in the server shop."
 }

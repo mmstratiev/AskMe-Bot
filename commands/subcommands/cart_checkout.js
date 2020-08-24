@@ -118,4 +118,9 @@ class Cart_Checkout extends SubCommand {
 	}
 }
 
-module.exports = new Cart_Checkout('checkout', 'Desc', [0], []);
+module.exports = new Cart_Checkout(
+	'checkout',
+	localization.cart_checkout_description,
+	[0],
+	[]
+);

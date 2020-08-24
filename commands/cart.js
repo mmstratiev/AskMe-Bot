@@ -1,4 +1,4 @@
-const { empty_command_usage } = require('../localization.json');
+const localization = require('../localization.json');
 const { cart_command } = require('../commands.json');
 
 const utilities = require('../utilities');
@@ -12,4 +12,7 @@ class CartCommand extends Command {
 	}
 }
 
-module.exports = new CartCommand(cart_command, 'Cart', [0, 1]);
+module.exports = new CartCommand(cart_command, localization.cart_description, [
+	0,
+	1,
+]);

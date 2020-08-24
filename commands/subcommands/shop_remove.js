@@ -248,4 +248,9 @@ class Shop_Remove extends SubCommand {
 	}
 }
 
-module.exports = new Shop_Remove('remove', 'Desc', [0], ['MANAGE_GUILD']);
+module.exports = new Shop_Remove(
+	'remove',
+	localization.shop_remove_description,
+	[0],
+	['MANAGE_GUILD']
+);

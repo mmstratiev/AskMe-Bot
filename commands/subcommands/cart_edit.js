@@ -196,4 +196,9 @@ class Cart_Edit extends SubCommand {
 	}
 }
 
-module.exports = new Cart_Edit('edit', 'Desc', [0], []);
+module.exports = new Cart_Edit(
+	'edit',
+	localization.cart_edit_description,
+	[0],
+	[]
+);

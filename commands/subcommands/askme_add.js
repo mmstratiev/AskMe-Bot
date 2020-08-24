@@ -113,4 +113,9 @@ class AskMe_Add extends SubCommand {
 	}
 }
 
-module.exports = new AskMe_Add('add', 'Desc', [0], ['MANAGE_GUILD']);
+module.exports = new AskMe_Add(
+	'add',
+	localization.askme_add_description,
+	[0],
+	['MANAGE_GUILD']
+);

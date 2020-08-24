@@ -366,4 +366,9 @@ class Shop_Add extends SubCommand {
 	}
 }
 
-module.exports = new Shop_Add('add', 'Desc', [0], ['MANAGE_GUILD']);
+module.exports = new Shop_Add(
+	'add',
+	localization.shop_add_description,
+	[0],
+	['MANAGE_GUILD']
+);

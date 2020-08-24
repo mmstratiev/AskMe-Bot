@@ -123,6 +123,6 @@ class AskMeCommand extends Command {
 
 module.exports = new AskMeCommand(
 	main_command,
-	'Answers the asked questions.',
+	localization.askme_description,
 	[0, 1]
 );
