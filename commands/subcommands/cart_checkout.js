@@ -67,7 +67,7 @@ class Cart_Checkout extends SubCommand {
 
 											// Construct Cart message as embed
 											const newContent = new MessageEmbed()
-												.setColor('#7289da')
+												.setColor('#43b581')
 												.setTitle(
 													`__${localization.reply_checkout_pay_now}__`
 												)

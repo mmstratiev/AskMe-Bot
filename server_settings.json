@@ -1,0 +1,15 @@
+{
+	"payment_user_webhook": {
+		"name": "Payment User Webhook",
+		"description": "The Discord WebHook URL which will inform users when their payment is accepted or refunded.",
+		"expected_value": "A Discord WebHook URL address.",
+		"default_value": ""
+	},
+
+	"payment_admin_webhook": {
+		"name": "Payment Admin Webhook",
+		"description": "The Discord WebHook URL which inform admins when a payment is accepted or refunded.",
+		"expected_value": "A Discord WebHook URL address.",
+		"default_value": ""
+	}
+}

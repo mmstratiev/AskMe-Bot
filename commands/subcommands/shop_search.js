@@ -35,6 +35,11 @@ class Shop_Search extends SubCommand {
 				max: 1,
 			};
 
+			const currencyFormatter = new Intl.NumberFormat('en-US', {
+				style: 'currency',
+				currency: 'USD',
+			});
+
 			// Get all categories in server
 			const availableCategoriesRows = db
 				.prepare(
@@ -48,7 +53,7 @@ class Shop_Search extends SubCommand {
 
 			const buildCategoriesEmbed = function () {
 				const result = new MessageEmbed()
-					.setColor('#7289da')
+					.setColor('#000000')
 					.setTitle(localization.reply_shop_search_categories_prompt)
 					.addFields(
 						availableCategoriesRows.map(
@@ -83,7 +88,7 @@ class Shop_Search extends SubCommand {
 					.join(', ');
 
 				const result = new MessageEmbed()
-					.setColor('#7289da')
+					.setColor('#000000')
 					.setTitle(localization.reply_shop_search_keywords_prompt)
 					.setDescription(embedDescription);
 
@@ -107,10 +112,7 @@ class Shop_Search extends SubCommand {
 						filteredCategoryNames.each((filteredMessage) => {
 							const categoryName = filteredMessage.content;
 
-							if (
-								categoryName === 'finish' ||
-								categoryName === 'cancel'
-							) {
+							if (categoryName === 'finish') {
 								awaitingUserInput = false;
 							} else {
 								let categoryRow = availableCategoriesRows.find(
@@ -175,7 +177,7 @@ class Shop_Search extends SubCommand {
 						filteredKeywords.each((filteredMessage) => {
 							const keyword = filteredMessage.content;
 
-							if (keyword === 'finish' || keyword === 'cancel') {
+							if (keyword === 'finish') {
 								awaitingUserInput = false;
 							} else {
 								const keywordIndex = selectedKeywords.indexOf(
@@ -246,13 +248,15 @@ class Shop_Search extends SubCommand {
 
 			if (matchedVirtualItems.length > 0) {
 				const foundItemsEmbed = new MessageEmbed()
-					.setColor('#7289da')
+					.setColor('#000000')
 					.setTitle(localization.reply_shop_search_found_items)
 					.addFields(
 						matchedVirtualItems.map((matchedVirtualItem) => {
 							return {
 								name: `\`${matchedVirtualItem.item_name}\``,
-								value: matchedVirtualItem.item_price,
+								value: currencyFormatter.format(
+									matchedVirtualItem.item_price
+								),
 								inline: true,
 							};
 						})

@@ -7,6 +7,13 @@
 	"reply_help_title": "AskMe Help",
 	"reply_help_description": "**Based on your permissions, you can use any of the following commands:**",
 
+	"reply_set_enter_number": "What would you like to change? Enter the number of the setting to change it. Enter `finish` to cancel command",
+	"reply_set_enter_value": "Enter the value you want to set for this setting.",
+	"reply_set_enter_value_expects": "This setting expects\\*:",
+	"reply_set_enter_value_warning": "* Entering an incorrect value type may result in unforeseen consequences!",
+	"reply_set_updated": "Setting updated!",
+	"reply_set_finished": "Finished changing settings!",
+
 	"reply_askme_enter_number": "What would you like to know? Enter the number of the question to get an answer. Enter `finish` to cancel command",
 	"reply_askme_user_asked": "You asked me...",
 	"reply_askme_finished_asking": "I hope I answered all your questions!",
@@ -21,7 +28,7 @@
 	"reply_askme_remove_removed": "Question removed!",
 	"reply_askme_remove_finished": "Finished removing questions!",
 
-	"reply_shop_add_message": "Enter the number of the thing you want to add. Enter 'finish' to finish adding.",
+	"reply_shop_add_message": "Enter the number of the thing you want to add. Enter `finish` to finish adding.",
 	"reply_shop_add_finished": "Finished adding!",
 	"reply_shop_add_item": "Item",
 	"reply_shop_add_enter_item_category": "Enter category name for item. Enter `finish` to stop adding items.",
@@ -38,13 +45,13 @@
 	"reply_shop_add_category_updated": "Category updated!",
 	"reply_shop_add_category_finished": "Finished adding categories!",
 
-	"reply_shop_remove_message": "Enter the number of the thing you want to remove. Enter 'finish' to finish removing.",
+	"reply_shop_remove_message": "Enter the number of the thing you want to remove. Enter `finish` to finish removing.",
 	"reply_shop_remove_finished": "Finished adding!",
-	"reply_shop_remove_item_name": "Enter the name of the item you want to remove. Enter 'finish' to finish removing items.",
+	"reply_shop_remove_item_name": "Enter the name of the item you want to remove. Enter `finish` to finish removing items.",
 	"reply_shop_remove_item_invalid": "Invalid item!",
 	"reply_shop_remove_item_removed": "Item removed!",
 	"reply_shop_remove_item_finished": "Finished removing items!",
-	"reply_shop_remove_category_name": "Enter the name of the category you want to remove. Enter 'finish' to finish removing categories.",
+	"reply_shop_remove_category_name": "Enter the name of the category you want to remove. Enter `finish` to finish removing categories.",
 	"reply_shop_remove_category_invalid": "Invalid category!",
 	"reply_shop_remove_category_removed": "Category removed!",
 	"reply_shop_remove_category_finished": "Finished removing categories!",
@@ -65,8 +72,8 @@
 
 	"reply_shop_search_categories": "Categories:",
 	"reply_shop_search_keywords": "Keywords",
-	"reply_shop_search_categories_prompt": "Enter category to mark/unmark for search. Enter `finish` to continue to next step. Enter `cancel` to cancel search.",
-	"reply_shop_search_keywords_prompt": "Enter keyword to add/remove from search criteria. Enter `finish` to see search results. Enter `cancel` to cancel search.",
+	"reply_shop_search_categories_prompt": "Enter category to mark/unmark for search. Enter `finish` to continue to next step.",
+	"reply_shop_search_keywords_prompt": "Enter keyword to add/remove from search criteria. Enter `finish` to see search results.",
 	"reply_shop_search_found_items": "I found these items matching your search criteria. Enter the name of the item you want to buy? Enter `finish` to stop adding items.",
 	"reply_shop_search_added_item": "Added item in shopping cart!",
 	"reply_shop_search_invalid_item": "Item not found in search results!",
@@ -74,6 +81,7 @@
 	"reply_shop_search_finished": "Finished buying items!",
 
 	"help_description": "Displays help about all available commands or specific command.",
+	"set_description": "Sets server specific settings for the bot.",
 	"askme_description": "Displays a list of FAQ and let's you choose which one to answer.",
 	"askme_add_description": "Add questions and answers in the question database.",
 	"askme_remove_description": "Removes questions from the question database.",

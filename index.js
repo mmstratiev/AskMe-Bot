@@ -172,6 +172,16 @@ client.on('ready', () => {
 			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE)`
 	).run();
 
+	db.prepare(
+		`CREATE TABLE IF NOT EXISTS settings(
+			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			server_id INTEGER NOT NULL, 
+			setting_name TEXT NOT NULL, 
+			setting_value TEXT NOT NULL, 
+			UNIQUE(server_id, setting_name),
+			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE)`
+	).run();
+
 	for (const [guildID, guild] of client.guilds.cache) {
 		AddServerToDatabase(guild);
 	}

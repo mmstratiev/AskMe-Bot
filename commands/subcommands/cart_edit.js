@@ -63,7 +63,7 @@ class Cart_Edit extends SubCommand {
 				const buildItemsEmbed = () => {
 					let totalValue = 0.0;
 					return new MessageEmbed()
-						.setColor('#7289da')
+						.setColor('#000000')
 						.setTitle(localization.reply_cart_edit_enter_item)
 						.addFields(
 							cartItems.map((cartItem) => {
