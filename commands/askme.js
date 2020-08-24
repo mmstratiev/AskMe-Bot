@@ -116,7 +116,9 @@ class AskMeCommand extends Command {
 				.reply(localization.reply_askme_finished_asking)
 				.then((r) => r.delete({ timeout: 4000 }));
 		} else {
-			message.reply('Sorry, it seems that I know nothing!');
+			message
+				.reply(localization.reply_askme_no_questions)
+				.then((r) => r.delete({ timeout: 3500 }));
 		}
 	}
 }

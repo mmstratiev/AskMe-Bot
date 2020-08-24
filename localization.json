@@ -16,6 +16,7 @@
 
 	"reply_askme_enter_number": "What would you like to know? Enter the number of the question to get an answer. Enter `finish` to cancel command",
 	"reply_askme_user_asked": "You asked me...",
+	"reply_askme_no_questions": "Sorry, it seems that I know nothing!",
 	"reply_askme_finished_asking": "I hope I answered all your questions!",
 
 	"reply_askme_add_enter_question": "Enter the question you would like to add. Enter `finish` to finish adding questions.",

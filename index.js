@@ -94,14 +94,14 @@ client.on('ready', () => {
 	// Create/update tables
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS servers(
-			id INTEGER PRIMARY KEY, 
+			id TEXT PRIMARY KEY, 
 			server_name TEXT NOT NULL)`
 	).run();
 
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS users(
-			id INTEGER PRIMARY KEY, 
-			server_id INTEGER NOT NULL, 
+			id TEXT PRIMARY KEY, 
+			server_id TEXT NOT NULL, 
 			user_name TEXT NOT NULL, 
 			UNIQUE(id, server_id), 
 			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE)`
@@ -110,8 +110,8 @@ client.on('ready', () => {
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS carts(
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
-			server_id INTEGER NOT NULL, 
-			user_id INTEGER NOT NULL, 
+			server_id TEXT NOT NULL, 
+			user_id TEXT NOT NULL, 
 			UNIQUE(server_id, user_id), 
 			FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE,
 			FOREIGN KEY (user_id) references users(id) ON DELETE CASCADE)`
@@ -131,7 +131,7 @@ client.on('ready', () => {
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS categories(
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
-			server_id INTEGER NOT NULL, 
+			server_id TEXT NOT NULL, 
 			category_name TEXT NOT NULL, 
 			category_description TEXT NOT NULL, 
 			UNIQUE(server_id, category_name), 
@@ -141,7 +141,7 @@ client.on('ready', () => {
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS items(
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
-			server_id INTEGER NOT NULL, 
+			server_id TEXT NOT NULL, 
 			category_id INTEGER NOT NULL, 
 			item_name TEXT NOT NULL, 
 			item_description TEXT NOT NULL, 
@@ -154,8 +154,8 @@ client.on('ready', () => {
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS payments(
 		id TEXT PRIMARY KEY,
-		server_id INTEGER NOT NULL,
-		user_id INTEGER NOT NULL,
+		server_id TEXT NOT NULL,
+		user_id TEXT NOT NULL,
 		payment_status TEXT NOT NULL,
 		payment_time TEXT NOT NULL,
 		FOREIGN KEY (server_id) references servers(id) ON DELETE CASCADE,
@@ -165,7 +165,7 @@ client.on('ready', () => {
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS questions(
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
-			server_id INTEGER NOT NULL, 
+			server_id TEXT NOT NULL, 
 			question TEXT NOT NULL, 
 			answer TEXT NOT NULL, 
 			UNIQUE(server_id, question), 
@@ -175,7 +175,7 @@ client.on('ready', () => {
 	db.prepare(
 		`CREATE TABLE IF NOT EXISTS settings(
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
-			server_id INTEGER NOT NULL, 
+			server_id TEXT NOT NULL, 
 			setting_name TEXT NOT NULL, 
 			setting_value TEXT NOT NULL, 
 			UNIQUE(server_id, setting_name),
