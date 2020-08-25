@@ -6,11 +6,11 @@ const api = express.Router();
 const captureOrder = require('../paypal/orders/captureOrder');
 
 const utilities = require('../utilities');
+const localization = require('../localization.json');
 const settings = require('../server_settings.json');
 
 const fetch = require('node-fetch');
-const { WebhookClient } = require('discord.js');
-const { connect } = require('./paypal_server');
+const { WebhookClient, MessageEmbed } = require('discord.js');
 
 api.get('/success', (req, res) => {
 	const orderID = req.query.token;
@@ -56,7 +56,7 @@ api.get('/success', (req, res) => {
 			.get([serverId, settings.payment_admin_webhook.name]);
 
 		if (adminWebhookSetting) {
-			fetch(userWebhookSetting.setting_value, {
+			fetch(adminWebhookSetting.setting_value, {
 				method: 'get',
 				headers: { 'Content-Type': 'application/json' },
 			})
@@ -77,7 +77,6 @@ api.get('/success', (req, res) => {
 	let capture = captureOrder
 		.captureOrder(orderID)
 		.then((captureResponse) => {
-			// TODO: make fancy
 			// Update payment information
 			db.prepare(
 				`UPDATE payments SET payment_status=?, payment_time=DATETIME('now') WHERE id=?`
@@ -85,29 +84,81 @@ api.get('/success', (req, res) => {
 
 			// Get payment details
 			const paymentDetails = db
-				.prepare(`SELECT server_id, user_id FROM payments WHERE id=?`)
-				.get([captureResponse.result.id]);
+				.prepare(
+					`SELECT users.user_name, payments.server_id, payments.user_id FROM payments 
+					INNER JOIN users
+					ON payments.user_id = users.id and payments.server_id = users.server_id
+					WHERE payments.id=?`
+				)
+				.get([orderID]);
 
-			// Clears cart on successful payment
+			const currencyFormatter = new Intl.NumberFormat('en-US', {
+				style: 'currency',
+				currency: 'USD',
+			});
+
+			// Send WebHook messages
+			try {
+				const successEmbed = new MessageEmbed()
+					.setAuthor(`${paymentDetails.user_name},`)
+					.setColor('#43b581')
+					.setTitle(localization.payment_successful_user)
+					.addField(
+						`${localization.payment_order_id}:`,
+						`\`${captureResponse.result.id}\``,
+						false
+					)
+					.addField(
+						`${localization.payment_amount}:`,
+						`\`${currencyFormatter.format(
+							captureResponse.result.purchase_units[0].payments
+								.captures[0].amount.value
+						)}\``
+					)
+					.setFooter(localization.payment_successful_thanks);
+
+				const successAdminEmbed = new MessageEmbed()
+					.setColor('#43b581')
+					.setTitle(
+						localization.payment_successful_admin.replace(
+							'^1',
+							paymentDetails.user_name
+						)
+					)
+					.addField(
+						`${localization.payment_order_id}:`,
+						`\`${captureResponse.result.id}\``,
+						false
+					)
+					.addField(
+						`${localization.payment_amount}:`,
+						`\`${currencyFormatter.format(
+							captureResponse.result.purchase_units[0].payments
+								.captures[0].amount.value
+						)}\``
+					);
+
+				sendToUserWebhook(paymentDetails.server_id, successEmbed);
+				sentToAdminWebhook(paymentDetails.server_id, successAdminEmbed);
+			} catch (webhookError) {
+				console.error(webhookError);
+			}
+
+			// Clear shopping cart for user
 			db.prepare(
 				'DELETE FROM cart_items WHERE cart_id IN(SELECT id FROM carts WHERE server_id = ? AND user_id = ?)'
 			).run([paymentDetails.server_id, paymentDetails.user_id]);
 
-			sendToUserWebhook(paymentDetails.server_id, 'Success!');
-
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'text/plain');
-			res.end('Success');
+			res.end(localization.payment_successful);
 		})
 		.catch((error) => {
-			// TODO: Refund
 			console.error(error);
-
-			sendToUserWebhook(paymentDetails.server_id, 'Failure!');
 
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'text/plain');
-			res.end('Failure');
+			res.end(localization.payment_failed);
 		})
 		.finally(() => {
 			db.close();

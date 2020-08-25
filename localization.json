@@ -93,5 +93,13 @@
 	"shop_description": "Used for actions related to the server shop. __Only usable with subcommands.__",
 	"shop_add_description": "Add items in the shop database.",
 	"shop_remove_description": "Removes items from the shop database.",
-	"shop_search_description": "Search for items to buy in the server shop."
+	"shop_search_description": "Search for items to buy in the server shop.",
+
+	"payment_successful": "Your order was processed successfully!",
+	"payment_successful_user": "Your payment was successful!",
+	"payment_successful_thanks": "Thank you!",
+	"payment_successful_admin": "User ^1 made a successful payment!",
+	"payment_failed": "An error occurred while processing your order! Please, contact the server admins.",
+	"payment_order_id": "Order ID",
+	"payment_amount": "Amount"
 }
