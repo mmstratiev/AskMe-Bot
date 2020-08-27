@@ -1,12 +1,14 @@
+const MessageCleaner = require('../classes/message_cleaner');
+const { MessageEmbed } = require('discord.js');
+
 const utilities = require('../../utilities');
 const localization = require('../../localization.json');
-
-const { MessageEmbed } = require('discord.js');
 
 const SubCommand = require('../classes/subcommand');
 class Shop_Add extends SubCommand {
 	async add_item(message) {
 		let db = utilities.openDatabase();
+		let cleaner = new MessageCleaner();
 
 		let awaitingUserInput = true;
 		const awaitFilter = (m) => m.author.id === message.author.id;
@@ -24,7 +26,6 @@ class Shop_Add extends SubCommand {
 		const awaitConditions = {
 			max: 1,
 		};
-		let messagesToDelete = new Array();
 
 		while (awaitingUserInput) {
 			let newItemCategoryId = undefined;
@@ -59,7 +60,7 @@ class Shop_Add extends SubCommand {
 
 			// Choose Category
 			message.reply(buildCategoriesEmbed()).then((r) => {
-				messagesToDelete.push(r);
+				cleaner.push(r);
 			});
 
 			while (!newItemCategoryId && awaitingUserInput) {
@@ -88,7 +89,7 @@ class Shop_Add extends SubCommand {
 						}
 
 						filteredCategoryName.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 					});
 			}
@@ -97,7 +98,7 @@ class Shop_Add extends SubCommand {
 				// Item name
 				message.channel
 					.send(localization.reply_shop_add_enter_item_name)
-					.then((r) => messagesToDelete.push(r));
+					.then((r) => cleaner.push(r));
 
 				await message.channel
 					.awaitMessages(awaitFilter, awaitConditions)
@@ -109,7 +110,7 @@ class Shop_Add extends SubCommand {
 						}
 
 						filteredName.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 					});
 			}
@@ -118,7 +119,7 @@ class Shop_Add extends SubCommand {
 				// Item description
 				message.channel
 					.send(localization.reply_shop_add_enter_item_description)
-					.then((r) => messagesToDelete.push(r));
+					.then((r) => cleaner.push(r));
 
 				await message.channel
 					.awaitMessages(awaitFilter, awaitConditions)
@@ -131,7 +132,7 @@ class Shop_Add extends SubCommand {
 						}
 
 						filteredDescription.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 					});
 			}
@@ -140,7 +141,7 @@ class Shop_Add extends SubCommand {
 				// Item price
 				message.channel
 					.send(localization.reply_shop_add_enter_item_price)
-					.then((r) => messagesToDelete.push(r));
+					.then((r) => cleaner.push(r));
 
 				await message.channel
 					.awaitMessages(awaitFilterPrice, awaitConditions)
@@ -154,7 +155,7 @@ class Shop_Add extends SubCommand {
 						}
 
 						filteredPrice.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 					});
 			}
@@ -191,20 +192,21 @@ class Shop_Add extends SubCommand {
 				}
 			}
 
-			message.channel.bulkDelete(messagesToDelete);
-			messagesToDelete = new Array();
+			cleaner.clean();
 		}
 
 		message.reply(localization.reply_shop_add_item_finished).then((r) => {
 			r.delete({ timeout: 4000 });
 		});
+
+		cleaner.clean({ timeout: 5000 });
 		db.close();
 	}
 
 	async add_category(message) {
 		let db = utilities.openDatabase();
 		let awaitingUserInput = true;
-		let messagesToDelete = new Array();
+		let cleaner = new MessageCleaner();
 
 		const awaitFilter = (m) => m.author.id === message.author.id;
 		const awaitFilterPrice = (m) => {
@@ -228,7 +230,7 @@ class Shop_Add extends SubCommand {
 
 			message
 				.reply(localization.reply_shop_add_enter_category_name)
-				.then((r) => messagesToDelete.push(r));
+				.then((r) => cleaner.push(r));
 
 			await message.channel
 				.awaitMessages(awaitFilter, awaitConditions)
@@ -240,7 +242,7 @@ class Shop_Add extends SubCommand {
 					}
 
 					filteredCategoryName.forEach((filteredMessage) =>
-						messagesToDelete.push(filteredMessage)
+						cleaner.push(filteredMessage)
 					);
 				});
 
@@ -249,7 +251,7 @@ class Shop_Add extends SubCommand {
 					.reply(
 						localization.reply_shop_add_enter_category_description
 					)
-					.then((r) => messagesToDelete.push(r));
+					.then((r) => cleaner.push(r));
 				await message.channel
 					.awaitMessages(awaitFilter, awaitConditions)
 					.then(async (filteredCategoryDesc) => {
@@ -261,7 +263,7 @@ class Shop_Add extends SubCommand {
 						}
 
 						filteredCategoryDesc.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 					});
 			}
@@ -294,8 +296,7 @@ class Shop_Add extends SubCommand {
 				}
 			}
 
-			message.channel.bulkDelete(messagesToDelete);
-			messagesToDelete = new Array();
+			cleaner.clean();
 		}
 
 		message
@@ -304,6 +305,7 @@ class Shop_Add extends SubCommand {
 				r.delete({ timeout: 4000 });
 			});
 
+		cleaner.clean({ timeout: 5000 });
 		db.close();
 	}
 
@@ -312,10 +314,10 @@ class Shop_Add extends SubCommand {
 		const awaitFilter = (m) => m.author.id === message.author.id;
 		const awaitConditions = {
 			max: 100,
-			idle: 1250,
+			idle: 500,
 		};
 
-		let messagesToDelete = new Array();
+		let cleaner = new MessageCleaner();
 
 		const sendMessage = () => {
 			const embed = new MessageEmbed()
@@ -326,7 +328,7 @@ class Shop_Add extends SubCommand {
 				);
 
 			message.reply(embed).then((r) => {
-				messagesToDelete.push(r);
+				cleaner.push(r);
 			});
 		};
 
@@ -347,11 +349,10 @@ class Shop_Add extends SubCommand {
 						}
 
 						filteredAddType.forEach((filteredMessage) => {
-							messagesToDelete.push(filteredMessage);
+							cleaner.push(filteredMessage);
 						});
 
-						message.channel.bulkDelete(messagesToDelete);
-						messagesToDelete = new Array();
+						cleaner.clean();
 
 						if (awaitingUserInput) {
 							sendMessage();
@@ -363,6 +364,8 @@ class Shop_Add extends SubCommand {
 		message.reply(localization.reply_shop_add_finished).then((r) => {
 			r.delete({ timeout: 4000 });
 		});
+
+		cleaner.clean({ timeout: 5000 });
 	}
 }
 

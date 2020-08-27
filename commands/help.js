@@ -41,6 +41,6 @@ class HelpCommand extends Command {
 
 module.exports = new HelpCommand(
 	help_command,
-	'Displays help about all available commands or specific command.',
+	localization.help_description
 	[0]
 );

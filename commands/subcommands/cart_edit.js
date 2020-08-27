@@ -1,9 +1,10 @@
+const { MessageEmbed } = require('discord.js');
+
 const utilities = require('../../utilities');
 const localization = require('../../localization.json');
 
-const { MessageEmbed } = require('discord.js');
-
 const SubCommand = require('../classes/subcommand');
+const MessageCleaner = require('../classes/message_cleaner');
 class Cart_Edit extends SubCommand {
 	async execute_internal(message, args) {
 		const db = utilities.openDatabase();
@@ -38,7 +39,7 @@ class Cart_Edit extends SubCommand {
 
 			// Message conditions
 			const awaitConditions = {
-				idle: 1250,
+				idle: 500,
 				max: 100,
 			};
 			const awaitConditionsQuantity = {
@@ -46,7 +47,7 @@ class Cart_Edit extends SubCommand {
 			};
 
 			let cartItems = new Array();
-			let messagesToDelete = new Array();
+			let cleaner = new MessageCleaner();
 
 			const sendCartMessage = function () {
 				cartItems = db
@@ -91,7 +92,7 @@ class Cart_Edit extends SubCommand {
 				};
 
 				message.reply(buildItemsEmbed()).then((r) => {
-					messagesToDelete.push(r);
+					cleaner.push(r);
 				});
 			};
 
@@ -117,7 +118,7 @@ class Cart_Edit extends SubCommand {
 											localization.reply_cart_enter_quantity_edit
 										)
 										.then((r) => {
-											messagesToDelete.push(r);
+											cleaner.push(r);
 										});
 
 									// let user select quantity
@@ -164,7 +165,7 @@ class Cart_Edit extends SubCommand {
 
 											filteredQuantity.forEach(
 												(filteredMessage) =>
-													messagesToDelete.push(
+													cleaner.push(
 														filteredMessage
 													)
 											);
@@ -172,11 +173,10 @@ class Cart_Edit extends SubCommand {
 								}
 							}
 							filteredItemNames.forEach((filteredMessage) =>
-								messagesToDelete.push(filteredMessage)
+								cleaner.push(filteredMessage)
 							);
 
-							message.channel.bulkDelete(messagesToDelete);
-							messagesToDelete = new Array();
+							cleaner.clean();
 
 							if (awaitingUserInput) {
 								sendCartMessage();
@@ -188,6 +188,8 @@ class Cart_Edit extends SubCommand {
 			message
 				.reply(localization.reply_cart_finished_editing)
 				.then((r) => r.delete({ timeout: 3500 }));
+
+			cleaner.clean({ timeout: 5000 });
 		} else {
 			throw new Error(
 				"Cart doesn't exist! Should be added on start of the bot!"

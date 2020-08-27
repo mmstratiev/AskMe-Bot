@@ -1,7 +1,8 @@
-const localization = require('../localization.json');
-
+const MessageCleaner = require('./classes/message_cleaner');
 const { MessageEmbed } = require('discord.js');
 const { main_command } = require('../commands.json');
+
+const localization = require('../localization.json');
 const utilities = require('../utilities');
 
 const Command = require('./classes/command');
@@ -33,11 +34,11 @@ class AskMeCommand extends Command {
 
 			// Message conditions
 			const awaitConditions = {
-				idle: 1250,
+				idle: 500,
 				max: 100,
 			};
 
-			let messagesToDelete = new Array();
+			let cleaner = new MessageCleaner();
 
 			const sendQuestionsMessage = function () {
 				let messageIndex = 1;
@@ -57,7 +58,7 @@ class AskMeCommand extends Command {
 
 				message.channel
 					.send(questionsEmbed)
-					.then((m) => messagesToDelete.push(m));
+					.then((m) => cleaner.push(m));
 			};
 
 			sendQuestionsMessage();
@@ -99,11 +100,10 @@ class AskMeCommand extends Command {
 								}
 							}
 							filteredQuestionIndex.forEach((filteredMessage) =>
-								messagesToDelete.push(filteredMessage)
+								cleaner.push(filteredMessage)
 							);
 
-							message.channel.bulkDelete(messagesToDelete);
-							messagesToDelete = new Array();
+							cleaner.clean();
 
 							if (awaitingUserInput) {
 								sendQuestionsMessage();
@@ -115,6 +115,8 @@ class AskMeCommand extends Command {
 			message
 				.reply(localization.reply_askme_finished_asking)
 				.then((r) => r.delete({ timeout: 4000 }));
+
+			cleaner.clean({ timeout: 5000 });
 		} else {
 			message
 				.reply(localization.reply_askme_no_questions)

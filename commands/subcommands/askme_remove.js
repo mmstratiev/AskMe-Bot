@@ -1,11 +1,15 @@
+const MessageCleaner = require('../classes/message_cleaner');
+const { MessageEmbed } = require('discord.js');
+
 const utilities = require('../../utilities');
 const localization = require('../../localization.json');
-const { MessageEmbed } = require('discord.js');
 
 const SubCommand = require('../classes/subcommand');
 class AskMe_Add extends SubCommand {
 	async execute_internal(message, args) {
 		let db = utilities.openDatabase();
+		let cleaner = new MessageCleaner();
+
 		let awaitingUserInput = true;
 
 		// Message filter
@@ -23,13 +27,11 @@ class AskMe_Add extends SubCommand {
 
 		// Message conditions
 		const awaitConditions = {
-			idle: 1250,
+			idle: 500,
 			max: 100,
 		};
 
 		let questionRows = new Array();
-		let messagesToDelete = new Array();
-
 		const sendQuestionsMessage = function () {
 			questionRows = db
 				.prepare(
@@ -52,9 +54,7 @@ class AskMe_Add extends SubCommand {
 						.join(' ')
 				);
 
-			message.channel
-				.send(questionsEmbed)
-				.then((m) => messagesToDelete.push(m));
+			message.channel.send(questionsEmbed).then((m) => cleaner.push(m));
 		};
 
 		sendQuestionsMessage();
@@ -89,11 +89,10 @@ class AskMe_Add extends SubCommand {
 							}
 						}
 						filteredQuestionIndex.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 
-						message.channel.bulkDelete(messagesToDelete);
-						messagesToDelete = new Array();
+						cleaner.clean();
 
 						if (awaitingUserInput) {
 							sendQuestionsMessage();
@@ -105,6 +104,8 @@ class AskMe_Add extends SubCommand {
 		message
 			.reply(localization.reply_askme_remove_finished)
 			.then((r) => r.delete({ timeout: 4000 }));
+
+		cleaner.clean({ timeout: 5000 });
 	}
 }
 

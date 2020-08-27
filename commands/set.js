@@ -1,11 +1,12 @@
+const { MessageEmbed } = require('discord.js');
+const { set_command } = require('../commands.json');
+
 const localization = require('../localization.json');
 const utilities = require('../utilities');
 const settings = require('../server_settings.json');
-const { set_command } = require('../commands.json');
-
-const { MessageEmbed } = require('discord.js');
 
 const Command = require('./classes/command');
+const MessageCleaner = require('./classes/message_cleaner');
 class SetCommand extends Command {
 	async execute_internal(message, args) {
 		let awaitingUserInput = true;
@@ -26,7 +27,7 @@ class SetCommand extends Command {
 
 		// Message conditions
 		const awaitConditions = {
-			idle: 1250,
+			idle: 500,
 			max: 100,
 		};
 		const awaitConditionsValue = {
@@ -39,7 +40,7 @@ class SetCommand extends Command {
 			settingObjects.push(value);
 		});
 
-		let messagesToDelete = new Array();
+		let cleaner = new MessageCleaner();
 
 		const sendSettingsMessage = function () {
 			let messageIndex = 1;
@@ -57,9 +58,7 @@ class SetCommand extends Command {
 						.join(' ')
 				);
 
-			message.channel
-				.send(settingsEmbed)
-				.then((m) => messagesToDelete.push(m));
+			message.channel.send(settingsEmbed).then((m) => cleaner.push(m));
 		};
 
 		sendSettingsMessage();
@@ -96,7 +95,7 @@ class SetCommand extends Command {
 
 								message
 									.reply(settingValueEmbed)
-									.then((r) => messagesToDelete.push(r));
+									.then((r) => cleaner.push(r));
 								await message.channel
 									.awaitMessages(
 										awaitFilterValue,
@@ -127,19 +126,16 @@ class SetCommand extends Command {
 
 										filteredValue.forEach(
 											(filteredMessage) =>
-												messagesToDelete.push(
-													filteredMessage
-												)
+												cleaner.push(filteredMessage)
 										);
 									});
 							}
 						}
 						filteredSettingIndex.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 
-						message.channel.bulkDelete(messagesToDelete);
-						messagesToDelete = new Array();
+						cleaner.clean();
 
 						if (awaitingUserInput) {
 							sendSettingsMessage();
@@ -151,6 +147,8 @@ class SetCommand extends Command {
 		message
 			.reply(localization.reply_set_finished)
 			.then((r) => r.delete({ timeout: 4000 }));
+
+		cleaner.clean({ timeout: 5000 });
 	}
 }
 

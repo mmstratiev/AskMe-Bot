@@ -2,6 +2,7 @@ const utilities = require('../../utilities');
 const localization = require('../../localization.json');
 
 const { MessageEmbed } = require('discord.js');
+const MessageCleaner = require('../classes/message_cleaner');
 
 const SubCommand = require('../classes/subcommand');
 class Shop_Remove extends SubCommand {
@@ -13,7 +14,8 @@ class Shop_Remove extends SubCommand {
 		const awaitConditions = {
 			max: 1,
 		};
-		let messagesToDelete = new Array();
+
+		let cleaner = new MessageCleaner();
 
 		while (awaitingUserInput) {
 			let itemToDeleteId = undefined;
@@ -40,9 +42,7 @@ class Shop_Remove extends SubCommand {
 				return result;
 			};
 
-			message
-				.reply(buildItemsEmbed())
-				.then((r) => messagesToDelete.push(r));
+			message.reply(buildItemsEmbed()).then((r) => cleaner.push(r));
 
 			// Let user choose item to delete
 			while (!itemToDeleteId && awaitingUserInput) {
@@ -71,7 +71,7 @@ class Shop_Remove extends SubCommand {
 						}
 
 						filteredName.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 					});
 			}
@@ -86,14 +86,14 @@ class Shop_Remove extends SubCommand {
 					.then((r) => r.delete({ timeout: 3500 }));
 			}
 
-			message.channel.bulkDelete(messagesToDelete);
-			messagesToDelete = new Array();
+			cleaner.clean();
 		}
 
 		message
 			.reply(localization.reply_shop_remove_item_finished)
 			.then((r) => r.delete({ timeout: 4000 }));
 
+		cleaner.clean({ timeout: 5000 });
 		db.close();
 	}
 
@@ -105,7 +105,7 @@ class Shop_Remove extends SubCommand {
 		const awaitConditions = {
 			max: 1,
 		};
-		let messagesToDelete = new Array();
+		let cleaner = new MessageCleaner();
 
 		while (awaitingUserInput) {
 			let categoryToDeleteId = undefined;
@@ -132,9 +132,7 @@ class Shop_Remove extends SubCommand {
 				return result;
 			};
 
-			message
-				.reply(buildCategoriesEmbed())
-				.then((r) => messagesToDelete.push(r));
+			message.reply(buildCategoriesEmbed()).then((r) => cleaner.push(r));
 
 			// Let user choose category to delete
 			while (!categoryToDeleteId && awaitingUserInput) {
@@ -164,7 +162,7 @@ class Shop_Remove extends SubCommand {
 						}
 
 						filteredCategory.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 					});
 			}
@@ -179,8 +177,7 @@ class Shop_Remove extends SubCommand {
 					.then((r) => r.delete({ timeout: 3500 }));
 			}
 
-			message.channel.bulkDelete(messagesToDelete);
-			messagesToDelete = new Array();
+			cleaner.clean();
 		}
 		message
 			.reply(localization.reply_shop_remove_category_finished)
@@ -194,10 +191,10 @@ class Shop_Remove extends SubCommand {
 		const awaitFilter = (m) => m.author.id === message.author.id;
 		const awaitConditions = {
 			max: 100,
-			idle: 1250,
+			idle: 500,
 		};
 
-		let messagesToDelete = new Array();
+		let cleaner = new MessageCleaner();
 
 		const sendMessage = () => {
 			const embed = new MessageEmbed()
@@ -208,7 +205,7 @@ class Shop_Remove extends SubCommand {
 				);
 
 			message.reply(embed).then((r) => {
-				messagesToDelete.push(r);
+				cleaner.push(r);
 			});
 		};
 
@@ -229,11 +226,10 @@ class Shop_Remove extends SubCommand {
 						}
 
 						filteredAddType.forEach((filteredMessage) => {
-							messagesToDelete.push(filteredMessage);
+							cleaner.push(filteredMessage);
 						});
 
-						message.channel.bulkDelete(messagesToDelete);
-						messagesToDelete = new Array();
+						cleaner.clean();
 
 						if (awaitingUserInput) {
 							sendMessage();

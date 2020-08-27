@@ -1,8 +1,10 @@
-const SubCommand = require('../classes/subcommand');
-const utilities = require('../../utilities');
-const localization = require('../../localization.json');
+const MessageCleaner = require('../classes/message_cleaner');
 const { MessageEmbed } = require('discord.js');
 
+const utilities = require('../../utilities');
+const localization = require('../../localization.json');
+
+const SubCommand = require('../classes/subcommand');
 class Shop_Search extends SubCommand {
 	async execute_internal(message, args) {
 		const db = utilities.openDatabase();
@@ -14,6 +16,8 @@ class Shop_Search extends SubCommand {
 			.get([message.guild.id, message.author.id]);
 
 		if (cartRow) {
+			let cleaner = new MessageCleaner();
+
 			const awaitFilter = (m) => m.author.id === message.author.id;
 			const awaitFilterQuantity = (m) => {
 				let result = false;
@@ -28,8 +32,8 @@ class Shop_Search extends SubCommand {
 			};
 
 			const awaitConditions = {
-				max: 100,
-				idle: 1250,
+				max: 1,
+				idle: 500,
 			};
 			const awaitConditionsQuantity = {
 				max: 1,
@@ -49,7 +53,6 @@ class Shop_Search extends SubCommand {
 
 			let selectedCategories = new Array();
 			let selectedKeywords = new Array();
-			let messagesToDelete = new Array();
 
 			const buildCategoriesEmbed = function () {
 				const result = new MessageEmbed()
@@ -97,7 +100,7 @@ class Shop_Search extends SubCommand {
 
 			const sendCategoriesMessage = function () {
 				message.reply(buildCategoriesEmbed()).then((m) => {
-					messagesToDelete.push(m);
+					cleaner.push(m);
 				});
 			};
 
@@ -141,13 +144,12 @@ class Shop_Search extends SubCommand {
 									}
 								}
 							}
-							messagesToDelete.push(filteredMessage);
+							cleaner.push(filteredMessage);
 						});
 
 						// no need do redo the message if user didn't enter a message
 						if (filteredCategoryNames.size > 0) {
-							message.channel.bulkDelete(messagesToDelete);
-							messagesToDelete = new Array();
+							cleaner.clean();
 
 							if (awaitingUserInput) {
 								sendCategoriesMessage();
@@ -160,12 +162,11 @@ class Shop_Search extends SubCommand {
 				message.channel
 					.send(buildKeywordsEmbed())
 					.then((keywordsMsg) => {
-						messagesToDelete.push(keywordsMsg);
+						cleaner.push(keywordsMsg);
 					});
 			};
 
-			message.channel.bulkDelete(messagesToDelete);
-			messagesToDelete = new Array();
+			cleaner.clean();
 			sendKeywordsMessage();
 
 			// Let user select keywords to search
@@ -191,13 +192,12 @@ class Shop_Search extends SubCommand {
 								}
 							}
 
-							messagesToDelete.push(filteredMessage);
+							cleaner.push(filteredMessage);
 						});
 
 						// no need do redo the message if user didn't enter a message
 						if (filteredKeywords.size > 0) {
-							message.channel.bulkDelete(messagesToDelete);
-							messagesToDelete = new Array();
+							cleaner.clean();
 
 							if (awaitingUserInput) {
 								sendKeywordsMessage();
@@ -269,7 +269,7 @@ class Shop_Search extends SubCommand {
 					let quantityToAdd = 0;
 
 					message.reply(foundItemsEmbed).then((r) => {
-						messagesToDelete.push(r);
+						cleaner.push(r);
 					});
 
 					// Item name
@@ -302,7 +302,7 @@ class Shop_Search extends SubCommand {
 								}
 
 								filteredItemNames.forEach((filteredMessage) =>
-									messagesToDelete.push(filteredMessage)
+									cleaner.push(filteredMessage)
 								);
 							});
 					}
@@ -310,7 +310,7 @@ class Shop_Search extends SubCommand {
 					// Quantity
 					if (awaitingUserInput) {
 						message.reply('Enter quantity to add').then((r) => {
-							messagesToDelete.push(r);
+							cleaner.push(r);
 						});
 
 						await message.channel
@@ -328,7 +328,7 @@ class Shop_Search extends SubCommand {
 								}
 
 								filteredQuantity.forEach((filteredMessage) =>
-									messagesToDelete.push(filteredMessage)
+									cleaner.push(filteredMessage)
 								);
 							});
 					}
@@ -358,8 +358,7 @@ class Shop_Search extends SubCommand {
 						}
 					}
 
-					message.channel.bulkDelete(messagesToDelete);
-					messagesToDelete = new Array();
+					cleaner.clean();
 				}
 			} else {
 				message.reply(localization.reply_shop_search_no_items);
@@ -368,6 +367,8 @@ class Shop_Search extends SubCommand {
 			message
 				.reply(localization.reply_shop_search_finished)
 				.then((r) => r.delete({ timeout: 3500 }));
+				
+			cleaner.clean({ timeout: 5000 });
 		} else {
 			throw new Error(
 				"Cart doesn't exist! Should be added on start of the bot"

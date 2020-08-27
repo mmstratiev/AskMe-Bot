@@ -1,3 +1,5 @@
+const MessageCleaner = require('../classes/message_cleaner');
+
 const utilities = require('../../utilities');
 const localization = require('../../localization.json');
 
@@ -5,6 +7,8 @@ const SubCommand = require('../classes/subcommand');
 class AskMe_Add extends SubCommand {
 	async execute_internal(message, args) {
 		let db = utilities.openDatabase();
+		let cleaner = new MessageCleaner();
+
 		let awaitingUserInput = true;
 
 		// Message filter
@@ -12,7 +16,7 @@ class AskMe_Add extends SubCommand {
 
 		// Message conditions
 		const awaitConditions = {
-			idle: 1250,
+			idle: 500,
 			max: 100,
 		};
 
@@ -21,12 +25,10 @@ class AskMe_Add extends SubCommand {
 			max: 1,
 		};
 
-		let messagesToDelete = new Array();
-
 		const sendQuestionMessage = function () {
 			message
 				.reply(localization.reply_askme_add_enter_question)
-				.then((m) => messagesToDelete.push(m));
+				.then((m) => cleaner.push(m));
 		};
 
 		sendQuestionMessage();
@@ -43,7 +45,7 @@ class AskMe_Add extends SubCommand {
 								.reply(
 									localization.reply_askme_add_enter_asnwer
 								)
-								.then((r) => messagesToDelete.push(r));
+								.then((r) => cleaner.push(r));
 
 							await message.channel
 								.awaitMessages(
@@ -86,17 +88,16 @@ class AskMe_Add extends SubCommand {
 									}
 
 									filteredAnswer.forEach((filteredMessage) =>
-										messagesToDelete.push(filteredMessage)
+										cleaner.push(filteredMessage)
 									);
 								});
 						}
 
 						filteredQuestions.forEach((filteredMessage) =>
-							messagesToDelete.push(filteredMessage)
+							cleaner.push(filteredMessage)
 						);
 
-						message.channel.bulkDelete(messagesToDelete);
-						messagesToDelete = new Array();
+						cleaner.clean();
 
 						if (awaitingUserInput) {
 							sendQuestionMessage();
@@ -109,6 +110,7 @@ class AskMe_Add extends SubCommand {
 			.reply(localization.reply_askme_add_finished)
 			.then((r) => r.delete({ timeout: 4000 }));
 
+		cleaner.clean({ timeout: 5000 });
 		db.close();
 	}
 }
