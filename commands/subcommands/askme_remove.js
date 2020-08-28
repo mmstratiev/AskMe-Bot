@@ -1,10 +1,10 @@
-const MessageCleaner = require('../classes/message_cleaner');
+const MessageCleaner = require('../../classes/message_cleaner');
 const { MessageEmbed } = require('discord.js');
 
-const utilities = require('../../utilities');
+const utilities = require('../../classes/utilities');
 const localization = require('../../localization.json');
 
-const SubCommand = require('../classes/subcommand');
+const SubCommand = require('../../classes/subcommand');
 class AskMe_Add extends SubCommand {
 	async execute_internal(message, args) {
 		let db = utilities.openDatabase();

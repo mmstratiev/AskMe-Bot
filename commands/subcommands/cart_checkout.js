@@ -1,10 +1,10 @@
-const utilities = require('../../utilities');
+const utilities = require('../../classes/utilities');
 const createOrder = require('../../paypal/orders/createOrder');
 const localization = require('../../localization.json');
 
 const { MessageEmbed } = require('discord.js');
 
-const SubCommand = require('../classes/subcommand');
+const SubCommand = require('../../classes/subcommand');
 class Cart_Checkout extends SubCommand {
 	async execute_internal(message, args) {
 		let db = utilities.openDatabase();
@@ -108,7 +108,9 @@ class Cart_Checkout extends SubCommand {
 							});
 					});
 			} else {
-				message.reply(localization.reply_cart_empty);
+				message.reply(localization.reply_cart_empty).then((r) => {
+					r.delete({ timeout: 4000 });
+				});
 			}
 		} else {
 			throw new Error(

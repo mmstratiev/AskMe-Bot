@@ -2,11 +2,11 @@ const { MessageEmbed } = require('discord.js');
 const { set_command } = require('../commands.json');
 
 const localization = require('../localization.json');
-const utilities = require('../utilities');
-const settings = require('../server_settings.json');
+const utilities = require('../classes/utilities');
+const settings = require('../server_settings.json').settings;
 
-const Command = require('./classes/command');
-const MessageCleaner = require('./classes/message_cleaner');
+const Command = require('../classes/command');
+const MessageCleaner = require('../classes/message_cleaner');
 class SetCommand extends Command {
 	async execute_internal(message, args) {
 		let awaitingUserInput = true;
@@ -34,12 +34,6 @@ class SetCommand extends Command {
 			max: 1,
 		};
 
-		let settingObjects = new Array();
-
-		Object.values(settings).forEach(function (value) {
-			settingObjects.push(value);
-		});
-
 		let cleaner = new MessageCleaner();
 
 		const sendSettingsMessage = function () {
@@ -48,12 +42,15 @@ class SetCommand extends Command {
 				.setColor('#000000')
 				.setTitle(localization.reply_set_enter_number)
 				.setDescription(
-					settingObjects
+					settings
 						.map(
-							(settingObject) =>
-								`\`\`\`md\n${messageIndex++}. ${
-									settingObject.name
-								}  \`\`\` *${settingObject.description}*`
+							(setting) =>
+								`\`\`\`ml\n${messageIndex++}. ${
+									setting.name
+								} - "${utilities.getServerSettingValue(
+									message.guild.id,
+									setting.id
+								)}"  \`\`\` *${setting.description}*`
 						)
 						.join(' ')
 				);
@@ -76,18 +73,17 @@ class SetCommand extends Command {
 
 							if (
 								settingIndex >= 0 &&
-								settingIndex < settingObjects.length
+								settingIndex < settings.length
 							) {
 								// Print out answer
-								const settingObject =
-									settingObjects[settingIndex];
+								const setting = settings[settingIndex];
 								const settingValueEmbed = new MessageEmbed()
 									.setColor('#000000')
 									.setTitle(
 										localization.reply_set_enter_value
 									)
 									.setDescription(
-										`*${localization.reply_set_enter_value_expects}* \`\`\`fix\n${settingObject.expected_value}\`\`\``
+										`*${localization.reply_set_enter_value_expects}* \`\`\`fix\n${setting.expected_value}\`\`\``
 									)
 									.setFooter(
 										localization.reply_set_enter_value_warning
@@ -110,7 +106,7 @@ class SetCommand extends Command {
 											`INSERT OR REPLACE INTO settings(server_id, setting_name, setting_value) VALUES(?,?,?)`
 										).run([
 											message.guild.id,
-											settingObject.name,
+											setting.id,
 											newValue,
 										]);
 

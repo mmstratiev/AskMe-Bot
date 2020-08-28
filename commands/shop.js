@@ -4,7 +4,7 @@ const { shop_command } = require('../commands.json');
 const { MessageEmbed } = require('discord.js');
 const { prefix } = require('../config.json');
 
-const Command = require('./classes/command');
+const Command = require('../classes/command');
 class ShopCommand extends Command {
 	async execute_internal(message, args) {
 		let embedDescription = `${localization.reply_help_description}\n`;

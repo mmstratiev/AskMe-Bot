@@ -1,10 +1,10 @@
-const MessageCleaner = require('../classes/message_cleaner');
+const MessageCleaner = require('../../classes/message_cleaner');
 const { MessageEmbed } = require('discord.js');
 
-const utilities = require('../../utilities');
+const utilities = require('../../classes/utilities');
 const localization = require('../../localization.json');
 
-const SubCommand = require('../classes/subcommand');
+const SubCommand = require('../../classes/subcommand');
 class Shop_Search extends SubCommand {
 	async execute_internal(message, args) {
 		const db = utilities.openDatabase();
@@ -85,10 +85,9 @@ class Shop_Search extends SubCommand {
 			};
 
 			const buildKeywordsEmbed = function () {
-				let embedDescription = `${localization.reply_shop_search_keywords}: `;
-				embedDescription += selectedKeywords
-					.map((selectedKeyword) => `\`${selectedKeyword}\``)
-					.join(', ');
+				let embedDescription = `\`\`\`css\n${
+					localization.reply_shop_search_keywords
+				}: [${selectedKeywords.join(', ')}] \`\`\``;
 
 				const result = new MessageEmbed()
 					.setColor('#000000')
@@ -294,7 +293,9 @@ class Shop_Search extends SubCommand {
 										itemToAddId = virtualItem.item_id;
 									} else {
 										message
-											.reply('Invalid item!')
+											.reply(
+												localization.reply_shop_search_invalid_item
+											)
 											.then((r) =>
 												r.delete({ timeout: 3500 })
 											);
@@ -309,9 +310,13 @@ class Shop_Search extends SubCommand {
 
 					// Quantity
 					if (awaitingUserInput) {
-						message.reply('Enter quantity to add').then((r) => {
-							cleaner.push(r);
-						});
+						message
+							.reply(
+								localization.reply_shop_search_quantity_prompt
+							)
+							.then((r) => {
+								cleaner.push(r);
+							});
 
 						await message.channel
 							.awaitMessages(
@@ -367,7 +372,7 @@ class Shop_Search extends SubCommand {
 			message
 				.reply(localization.reply_shop_search_finished)
 				.then((r) => r.delete({ timeout: 3500 }));
-				
+
 			cleaner.clean({ timeout: 5000 });
 		} else {
 			throw new Error(

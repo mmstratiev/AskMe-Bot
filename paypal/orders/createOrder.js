@@ -5,7 +5,7 @@ const checkoutNodeJssdk = require('@paypal/checkout-server-sdk');
 const payPalClient = require('../paypal_client');
 const paypalServerDomain = require('../paypal_server_domain');
 
-const utilities = require('../../utilities');
+const utilities = require('../../classes/utilities');
 /**
  * Setting up the JSON request body for creating the Order. The Intent in the
  * request body should be set as "CAPTURE" for capture intent flow.

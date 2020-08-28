@@ -77,6 +77,7 @@
 	"reply_shop_search_keywords": "Keywords",
 	"reply_shop_search_categories_prompt": "Enter category to mark/unmark for search. Enter `finish` to continue to next step.",
 	"reply_shop_search_keywords_prompt": "Enter keyword to add/remove from search criteria. Enter `finish` to see search results.",
+	"reply_shop_search_quantity_prompt": "Enter the quantity you want to add.",
 	"reply_shop_search_found_items": "I found these items matching your search criteria. Enter the name of the item you want to buy? Enter `finish` to stop adding items.",
 	"reply_shop_search_added_item": "Added item in shopping cart!",
 	"reply_shop_search_invalid_item": "Item not found in search results!",

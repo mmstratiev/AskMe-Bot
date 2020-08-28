@@ -1,11 +1,11 @@
-const MessageCleaner = require('./classes/message_cleaner');
+const MessageCleaner = require('../classes/message_cleaner');
 const { MessageEmbed } = require('discord.js');
 const { main_command } = require('../commands.json');
 
 const localization = require('../localization.json');
-const utilities = require('../utilities');
+const utilities = require('../classes/utilities');
 
-const Command = require('./classes/command');
+const Command = require('../classes/command');
 class AskMeCommand extends Command {
 	async execute_internal(message, args) {
 		let db = utilities.openDatabase();

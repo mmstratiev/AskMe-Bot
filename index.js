@@ -1,6 +1,6 @@
 const discord = require('discord.js');
 const localization = require('./localization.json');
-const utilities = require('./utilities.js');
+const utilities = require('./classes/utilities.js');
 const { prefix, token } = require('./config.json');
 const { help_command } = require('./commands.json');
 

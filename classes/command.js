@@ -41,7 +41,7 @@ module.exports = class Command extends SimpleCommand {
 			.filter((file) => file.match(subCommandRegex));
 
 		for (const file of commandFiles) {
-			const subCommand = require(`../subcommands/${file}`);
+			const subCommand = require(`../commands/subcommands/${file}`);
 
 			// set a new item in the Collection
 			// with the key as the SubCommand name and the value as the exported module

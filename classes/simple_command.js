@@ -2,9 +2,9 @@ const {
 	reply_missing_permissions,
 	response_invalid_argument_count,
 	response_proper_command,
-} = require('../../localization.json');
+} = require('../localization.json');
 
-const { prefix } = require('../../config.json');
+const { prefix } = require('../config.json');
 
 module.exports = class SimpleCommand {
 	constructor(name, description, args = [], permissions = []) {

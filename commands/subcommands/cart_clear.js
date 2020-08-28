@@ -1,7 +1,7 @@
-const utilities = require('../../utilities');
+const utilities = require('../../classes/utilities');
 const localization = require('../../localization.json');
 
-const SubCommand = require('../classes/subcommand');
+const SubCommand = require('../../classes/subcommand');
 class Cart_Clear extends SubCommand {
 	async execute_internal(message, args) {
 		const db = utilities.openDatabase();

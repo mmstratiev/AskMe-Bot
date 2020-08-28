@@ -5,9 +5,8 @@ const api = express.Router();
 
 const captureOrder = require('../paypal/orders/captureOrder');
 
-const utilities = require('../utilities');
+const utilities = require('../classes/utilities');
 const localization = require('../localization.json');
-const settings = require('../server_settings.json');
 
 const fetch = require('node-fetch');
 const { WebhookClient, MessageEmbed } = require('discord.js');
@@ -17,17 +16,14 @@ api.get('/success', (req, res) => {
 	const db = utilities.openDatabase();
 
 	const sendToUserWebhook = function (serverId, content) {
-		const db = utilities.openDatabase();
-
 		// Get user webhook address
-		let userWebhookSetting = db
-			.prepare(
-				'SELECT setting_value FROM settings WHERE server_id=? AND setting_name=?'
-			)
-			.get([serverId, settings.payment_user_webhook.name]);
+		let userWebhookSetting = utilities.getServerSettingValue(
+			serverId,
+			'payment_user_webhook'
+		);
 
 		if (userWebhookSetting) {
-			fetch(userWebhookSetting.setting_value, {
+			fetch(userWebhookSetting, {
 				method: 'get',
 				headers: { 'Content-Type': 'application/json' },
 			})
@@ -40,23 +36,19 @@ api.get('/success', (req, res) => {
 
 					webhookClient.send(content);
 				})
-				.catch((err) => console.log(err));
+				.catch((err) => console.error(err));
 		}
-		db.close();
 	};
 
 	const sentToAdminWebhook = function (serverId, content) {
-		const db = utilities.openDatabase();
-
 		// Get admin webhook address
-		let adminWebhookSetting = db
-			.prepare(
-				'SELECT setting_value FROM settings WHERE server_id=? AND setting_name=?'
-			)
-			.get([serverId, settings.payment_admin_webhook.name]);
+		let adminWebhookSetting = utilities.getServerSettingValue(
+			serverId,
+			'payment_admin_webhook'
+		);
 
 		if (adminWebhookSetting) {
-			fetch(adminWebhookSetting.setting_value, {
+			fetch(adminWebhookSetting, {
 				method: 'get',
 				headers: { 'Content-Type': 'application/json' },
 			})
@@ -69,9 +61,8 @@ api.get('/success', (req, res) => {
 
 					webhookClient.send(content);
 				})
-				.catch((err) => console.log(err));
+				.catch((err) => console.error(err));
 		}
-		db.close();
 	};
 
 	let capture = captureOrder

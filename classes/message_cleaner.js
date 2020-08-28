@@ -19,7 +19,9 @@ module.exports = class MessageCleaner {
 		setTimeout(() => {
 			lock.acquire('messagesArray', () => {
 				this.messages.forEach((message) => {
-					message.delete();
+					if (!message.deleted) {
+						message.delete();
+					}
 				});
 
 				this.messages = [];

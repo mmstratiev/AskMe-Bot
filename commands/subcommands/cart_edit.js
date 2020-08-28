@@ -1,10 +1,10 @@
 const { MessageEmbed } = require('discord.js');
 
-const utilities = require('../../utilities');
+const utilities = require('../../classes/utilities');
 const localization = require('../../localization.json');
 
-const SubCommand = require('../classes/subcommand');
-const MessageCleaner = require('../classes/message_cleaner');
+const SubCommand = require('../../classes/subcommand');
+const MessageCleaner = require('../../classes/message_cleaner');
 class Cart_Edit extends SubCommand {
 	async execute_internal(message, args) {
 		const db = utilities.openDatabase();

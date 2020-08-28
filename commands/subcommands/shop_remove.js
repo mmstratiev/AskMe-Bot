@@ -1,10 +1,10 @@
-const utilities = require('../../utilities');
+const utilities = require('../../classes/utilities');
 const localization = require('../../localization.json');
 
 const { MessageEmbed } = require('discord.js');
-const MessageCleaner = require('../classes/message_cleaner');
+const MessageCleaner = require('../../classes/message_cleaner');
 
-const SubCommand = require('../classes/subcommand');
+const SubCommand = require('../../classes/subcommand');
 class Shop_Remove extends SubCommand {
 	async remove_item(message) {
 		let db = utilities.openDatabase();
