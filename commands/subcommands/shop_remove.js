@@ -33,8 +33,13 @@ class Shop_Remove extends SubCommand {
 					.addFields(
 						availableItemRows.map((availableItemRow) => {
 							return {
-								name: `\`${availableItemRow.item_name}\``,
-								value: `\`\`\`${availableItemRow.item_description}\`\`\``,
+								name: `\`${
+									availableItemRow.item_name
+								}\` - ${utilities.formatCurrency(
+									message.guild.id,
+									availableItemRow.item_price
+								)}`,
+								value: `\`\`\`fix\n${availableItemRow.item_description}\`\`\``,
 								inline: true,
 							};
 						})
@@ -124,7 +129,7 @@ class Shop_Remove extends SubCommand {
 						availableCategoriesRows.map((availableCategoryRow) => {
 							return {
 								name: `\`${availableCategoryRow.category_name}\``,
-								value: `\`\`\`${availableCategoryRow.category_description}\`\`\``,
+								value: `\`\`\`fix\n${availableCategoryRow.category_description}\`\`\``,
 								inline: true,
 							};
 						})

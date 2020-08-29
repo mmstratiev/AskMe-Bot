@@ -39,11 +39,6 @@ class Shop_Search extends SubCommand {
 				max: 1,
 			};
 
-			const currencyFormatter = new Intl.NumberFormat('en-US', {
-				style: 'currency',
-				currency: 'USD',
-			});
-
 			// Get all categories in server
 			const availableCategoriesRows = db
 				.prepare(
@@ -217,13 +212,13 @@ class Shop_Search extends SubCommand {
 			// Create virtual table to use FTS
 			db.prepare('DROP TABLE IF EXISTS items_virtual').run();
 			db.prepare(
-				`CREATE VIRTUAL TABLE items_virtual USING FTS5(item_id, category_name, item_name, item_desc, item_price)`
+				`CREATE VIRTUAL TABLE items_virtual USING FTS5(item_id, category_name, item_name, item_description, item_price)`
 			).run();
 
 			// Populate the virtual table with the items that match the selected categories
 			allItemRows.forEach((itemRow) => {
 				db.prepare(
-					`INSERT INTO items_virtual(item_id, category_name, item_name, item_desc, item_price) VALUES(?,?,?,?,?)`
+					`INSERT INTO items_virtual(item_id, category_name, item_name, item_description, item_price) VALUES(?,?,?,?,?)`
 				).run([
 					itemRow.id,
 					itemRow.category_name,
@@ -252,10 +247,13 @@ class Shop_Search extends SubCommand {
 					.addFields(
 						matchedVirtualItems.map((matchedVirtualItem) => {
 							return {
-								name: `\`${matchedVirtualItem.item_name}\``,
-								value: currencyFormatter.format(
+								name: `\`${
+									matchedVirtualItem.item_name
+								}\` - ${utilities.formatCurrency(
+									message.guild.id,
 									matchedVirtualItem.item_price
-								),
+								)}`,
+								value: `\`\`\`fix\n${matchedVirtualItem.item_description}\`\`\``,
 								inline: true,
 							};
 						})
@@ -288,7 +286,6 @@ class Shop_Search extends SubCommand {
 										}
 									);
 
-									console.log(virtualItem);
 									if (virtualItem) {
 										itemToAddId = virtualItem.item_id;
 									} else {

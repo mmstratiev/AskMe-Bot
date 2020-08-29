@@ -18,13 +18,15 @@ module.exports.PaypalItem = class PaypalItem {
 		description = '',
 		sku = '',
 		value = 0,
-		quantity = 0
+		quantity = 0,
+		currency = 'USD'
 	) {
 		this.name = name;
 		this.description = description;
 		this.sku = sku;
 		this.value = value;
 		this.quantity = quantity;
+		this.currency = currency;
 	}
 
 	toJson() {
@@ -33,7 +35,7 @@ module.exports.PaypalItem = class PaypalItem {
 			description: this.description,
 			sku: this.sku,
 			unit_amount: {
-				currency_code: 'USD',
+				currency_code: this.currency,
 				value: this.value,
 			},
 			quantity: this.quantity,
@@ -42,7 +44,10 @@ module.exports.PaypalItem = class PaypalItem {
 	}
 };
 
-module.exports.buildRequestBody = function buildRequestBody(items = []) {
+module.exports.buildRequestBody = function buildRequestBody(
+	items = [],
+	currency = 'EUR'
+) {
 	let totalValue = 0;
 	items.forEach((item) => {
 		totalValue += item.value * item.quantity;
@@ -62,12 +67,12 @@ module.exports.buildRequestBody = function buildRequestBody(items = []) {
 		purchase_units: [
 			{
 				amount: {
-					currency_code: 'USD',
+					currency_code: currency,
 					value: totalValue,
 					breakdown: {
 						item_total: {
-							currency_code: 'USD',
-							value: totalValue.toString(),
+							currency_code: currency,
+							value: totalValue,
 						},
 					},
 				},

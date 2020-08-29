@@ -83,11 +83,6 @@ api.get('/success', (req, res) => {
 				)
 				.get([orderID]);
 
-			const currencyFormatter = new Intl.NumberFormat('en-US', {
-				style: 'currency',
-				currency: 'USD',
-			});
-
 			// Send WebHook messages
 			try {
 				const successEmbed = new MessageEmbed()
@@ -101,7 +96,8 @@ api.get('/success', (req, res) => {
 					)
 					.addField(
 						`${localization.payment_amount}:`,
-						`\`${currencyFormatter.format(
+						`\`${utilities.formatCurrency(
+							paymentDetails.server_id,
 							captureResponse.result.purchase_units[0].payments
 								.captures[0].amount.value
 						)}\``
@@ -123,7 +119,8 @@ api.get('/success', (req, res) => {
 					)
 					.addField(
 						`${localization.payment_amount}:`,
-						`\`${currencyFormatter.format(
+						`\`${utilities.formatCurrency(
+							paymentDetails.server_id,
 							captureResponse.result.purchase_units[0].payments
 								.captures[0].amount.value
 						)}\``

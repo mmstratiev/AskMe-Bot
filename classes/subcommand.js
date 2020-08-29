@@ -1,5 +1,6 @@
-const SimpleCommand = require('./simple_command');
+const utilities = require('../classes/utilities');
 
+const SimpleCommand = require('./simple_command');
 module.exports = class SubCommand extends SimpleCommand {
 	constructor(name, description, args = [], permissions = []) {
 		super(name, description, args, permissions);
@@ -11,7 +12,14 @@ module.exports = class SubCommand extends SimpleCommand {
 			if (this.matchArguments(args)) {
 				await this.execute_internal(message, args);
 			} else {
-				message.reply(this.getInvalidArgumentsReply());
+				message.reply(
+					this.getInvalidArgumentsReply(
+						utilities.getServerSettingValue(
+							message.guild.id,
+							'prefix'
+						)
+					)
+				);
 			}
 		} else {
 			message.reply(this.getInvalidPermissionsReply());

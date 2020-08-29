@@ -40,7 +40,7 @@ module.exports.getServerSettingValue = (serverId, settingId) => {
 			result = settingRow.setting_value;
 		} else {
 			const setting = settings.find((setting) => {
-				setting.id === settingId;
+				return setting.id === settingId;
 			});
 
 			if (setting) {
@@ -54,4 +54,11 @@ module.exports.getServerSettingValue = (serverId, settingId) => {
 	}
 
 	return result;
+};
+
+module.exports.formatCurrency = (serverId, toFormat) => {
+	return new Intl.NumberFormat('en-US', {
+		style: 'currency',
+		currency: this.getServerSettingValue(serverId, 'currency'),
+	}).format(toFormat);
 };

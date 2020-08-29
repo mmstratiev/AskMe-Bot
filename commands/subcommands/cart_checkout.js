@@ -29,6 +29,11 @@ class Cart_Checkout extends SubCommand {
 				await message
 					.reply(localization.reply_checkout_creating)
 					.then(async (r) => {
+						const currencyCode = utilities.getServerSettingValue(
+							message.guild.id,
+							'currency'
+						);
+
 						const paypalItems = cartItems.map(
 							(cartItem) =>
 								new createOrder.PaypalItem(
@@ -36,13 +41,17 @@ class Cart_Checkout extends SubCommand {
 									cartItem.item_description,
 									cartItem.id,
 									cartItem.item_price,
-									cartItem.item_quantity
+									cartItem.item_quantity,
+									currencyCode
 								)
 						);
 
 						await createOrder
 							.createOrder(
-								createOrder.buildRequestBody(paypalItems),
+								createOrder.buildRequestBody(
+									paypalItems,
+									currencyCode
+								),
 								false
 							)
 							.then((createResponse) => {
@@ -57,14 +66,6 @@ class Cart_Checkout extends SubCommand {
 								createResponse.result.links.forEach(
 									(element) => {
 										if (element.rel === 'approve') {
-											const currencyFormatter = new Intl.NumberFormat(
-												'en-US',
-												{
-													style: 'currency',
-													currency: 'USD',
-												}
-											);
-
 											// Construct Cart message as embed
 											const newContent = new MessageEmbed()
 												.setColor('#43b581')
@@ -74,7 +75,8 @@ class Cart_Checkout extends SubCommand {
 												.setDescription(
 													`${
 														localization.reply_cart_total
-													} **${currencyFormatter.format(
+													} **${utilities.formatCurrency(
+														message.guild.id,
 														createResponse.result
 															.purchase_units[0]
 															.amount.value
@@ -84,7 +86,9 @@ class Cart_Checkout extends SubCommand {
 												.addFields(
 													cartItems.map(
 														(cartItem) => {
-															const formattedPrice = currencyFormatter.format(
+															const formattedPrice = utilities.formatCurrency(
+																message.guild
+																	.id,
 																cartItem.item_quantity *
 																	cartItem.item_price
 															);

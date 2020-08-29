@@ -1,12 +1,16 @@
 const localization = require('../localization.json');
-const { cart_command } = require('../commands.json');
+const utilities = require('../classes/utilities');
 
+const { cart_command } = require('../commands.json');
 const { MessageEmbed } = require('discord.js');
-const { prefix } = require('../config.json');
 
 const Command = require('../classes/command');
 class CartCommand extends Command {
 	async execute_internal(message, args) {
+		const prefix = utilities.getServerSettingValue(
+			message.guild.id,
+			'prefix'
+		);
 		let embedDescription = `${localization.reply_help_description}\n`;
 
 		const subCommands = this.getSubCommands();

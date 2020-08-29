@@ -1,13 +1,17 @@
 const localization = require('../localization.json');
 const { help_command } = require('../commands.json');
 
-const { prefix } = require('../config.json');
 const utilities = require('../classes/utilities.js');
 
 const { MessageEmbed } = require('discord.js');
 const Command = require('../classes/command');
 class HelpCommand extends Command {
 	execute_internal(message, args) {
+		const prefix = utilities.getServerSettingValue(
+			message.guild.id,
+			'prefix'
+		);
+
 		const commands = utilities.getCommandsCollection();
 		let embedDescription = `${localization.reply_help_description}\n`;
 
@@ -39,8 +43,6 @@ class HelpCommand extends Command {
 	}
 }
 
-module.exports = new HelpCommand(
-	help_command,
-	localization.help_description
-	[0]
-);
+module.exports = new HelpCommand(help_command, localization.help_description, [
+	0,
+]);

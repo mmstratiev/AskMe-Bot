@@ -4,8 +4,6 @@ const {
 	response_proper_command,
 } = require('../localization.json');
 
-const { prefix } = require('../config.json');
-
 module.exports = class SimpleCommand {
 	constructor(name, description, args = [], permissions = []) {
 		this.name = name;
@@ -34,7 +32,7 @@ module.exports = class SimpleCommand {
 		});
 	}
 
-	getInvalidArgumentsReply() {
+	getInvalidArgumentsReply(prefix) {
 		let result = `${response_invalid_argument_count}\n${response_proper_command} `;
 
 		this.usage.forEach((useCase) => {

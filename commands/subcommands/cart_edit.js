@@ -18,11 +18,6 @@ class Cart_Edit extends SubCommand {
 		if (cartRow) {
 			let awaitingUserInput = true;
 
-			const currencyFormatter = new Intl.NumberFormat('en-US', {
-				style: 'currency',
-				currency: 'USD',
-			});
-
 			// Message filters
 			const awaitFilter = (m) => m.author.id === message.author.id;
 			const awaitFilterQuantity = (m) => {
@@ -73,7 +68,8 @@ class Cart_Edit extends SubCommand {
 									cartItem.item_quantity *
 									cartItem.item_price;
 
-								const formattedPrice = currencyFormatter.format(
+								const formattedPrice = utilities.formatCurrency(
+									message.guild.id,
 									cartItem.item_quantity * cartItem.item_price
 								);
 
@@ -87,7 +83,10 @@ class Cart_Edit extends SubCommand {
 						.setDescription(
 							`${
 								localization.reply_cart_total
-							} **${currencyFormatter.format(totalValue)}**`
+							} **${utilities.formatCurrency(
+								message.guild.id,
+								totalValue
+							)}**`
 						);
 				};
 

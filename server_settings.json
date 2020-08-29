@@ -1,6 +1,20 @@
 {
 	"settings": [
 		{
+			"id": "prefix",
+			"name": "Prefix",
+			"description": "The prefix before commands that this server will use for all commands.",
+			"expected_value": "Anything.",
+			"default_value": "?"
+		},
+		{
+			"id": "currency",
+			"name": "Currency Code",
+			"description": "The currency the server shop will use.",
+			"expected_value": "A currency code. For a full list of supported currency codes, see https://developer.paypal.com/docs/api/reference/currency-codes/",
+			"default_value": "USD"
+		},
+		{
 			"id": "payment_user_webhook",
 			"name": "Payment User Webhook",
 			"description": "The Discord WebHook URL which will inform users when their payment is accepted or refunded.",

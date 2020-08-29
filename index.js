@@ -1,7 +1,7 @@
 const discord = require('discord.js');
 const localization = require('./localization.json');
 const utilities = require('./classes/utilities.js');
-const { prefix, token } = require('./config.json');
+const { token } = require('./config.json');
 const { help_command } = require('./commands.json');
 
 const paypalServer = require('./paypal/paypal_server');
@@ -215,6 +215,8 @@ client.on('guildUpdate', (guild) => {
 });
 
 client.on('message', (message) => {
+	const prefix = utilities.getServerSettingValue(message.guild.id, 'prefix');
+
 	if (!message.author.bot) {
 		if (message.content.startsWith(prefix)) {
 			const args = message.content.slice(prefix.length).split(/ +/);
